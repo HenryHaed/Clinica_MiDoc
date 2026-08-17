@@ -1,0 +1,23 @@
+{
+  "name": "clinica-mi-doc",
+  "version": "1.0.0",
+  "description": "Monorepo project with PHP backend and Tailwind CSS compiled locally",
+  "main": "index.php",
+  "scripts": {
+    "build": "npx tailwindcss -i ./src/input.css -o ./assets/css/style.css --minify",
+    "watch": "npx tailwindcss -i ./src/input.css -o ./assets/css/style.css --watch"
+  },
+  "keywords": [
+    "php",
+    "tailwind",
+    "monorepo",
+    "hostinger"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
+  }
+}

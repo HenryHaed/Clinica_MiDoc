@@ -1,0 +1,35 @@
+# Dependencias
+node_modules/
+
+# Secretos y overrides locales
+.env
+.env.*
+config/db.local.php
+*.local.php
+notes.txt
+
+# Datos de runtime (citas, uploads)
+storage/*.json
+!storage/.gitkeep
+assets/uploads/**
+!assets/uploads/.gitkeep
+!assets/uploads/Imagenes_Cargadas/.gitkeep
+
+# Logs y caché
+*.log
+npm-debug.log*
+.cache/
+
+# SO / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Cursor / herramientas locales
+.cursor/
+.cursorignore
