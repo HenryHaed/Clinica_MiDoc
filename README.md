@@ -1,47 +1,25 @@
 # Clínica Mi Doc
 
-Sitio web y panel de la clínica del Dr. Hernán Caihuara Salas.  
-PHP 8 + MySQL. Pensado para XAMPP (local) y Hostinger (producción).
+Sitio y panel del Dr. Hernán Caihuara Salas. PHP 8 + MySQL (XAMPP local / Hostinger Premium).
 
-## Arranque local
+## Local
 
-1. Copia el proyecto a `htdocs` y arranca Apache + MySQL.
-2. En phpMyAdmin, crea la base `clinica_mi_doc` e importa `sql/schema.sql` (y `sql/seed_users.sql` si hace falta).
+1. Apache + MySQL en XAMPP.
+2. phpMyAdmin: crea `clinica_mi_doc` (utf8mb4) e importa **`sql/schema.sql`**.
 3. Abre `http://localhost/proyectos/Clinica-Mi-Doc/`
 
-Cuentas de prueba: ver `sql/seed_users.sql`.
-
-## Qué hay
-
-| Ruta | Qué es |
-|------|--------|
-| `index.php` | Landing |
-| `login.php` | Acceso al panel |
-| `dashboard.php` | Panel según rol |
-| `ajustes.php` | Textos, imágenes y especialidades |
-| `config/db.php` | Conexión MySQL (local / Hostinger) |
-| `includes/theme.php` | Paleta de colores |
-
-Las imágenes subidas se guardan en `assets/uploads/Imagenes_Cargadas/`.
-
-## Colores
-
-Edita **`includes/theme.php`** (`theme_colors()`). El sitio toma esa paleta.
-
-Si también compilas Tailwind en local (`npm run build`), replica los mismos hex en `tailwind.config.js`.
+Cuentas de prueba: están en el mismo `schema.sql` (clave `Password123$`).
 
 ## Hostinger
 
-1. Pon las credenciales reales en el bloque de producción de `config/db.php` (o usa `config/db.local.php` en local; no se sube a Git).
-2. Sube el código PHP, `assets/`, `includes/`, `config/`, `sql/` y `api/`.
-3. No subas `node_modules/`, `.env` ni archivos de uploads.
+Sigue **`HOSTINGER.md`**: PHP 8.2, crear BD en hPanel, importar `sql/schema.sql`, copiar `config/db.hostinger.example.php` → `db.hostinger.php`.
 
-## GitHub
+## Archivos clave
 
-```bash
-git init
-git add .
-git commit -m "Initial commit: Clínica Mi Doc"
-git remote add origin https://github.com/USUARIO/Clinica-Mi-Doc.git
-git push -u origin main
-```
+| Ruta | Uso |
+|------|-----|
+| `index.php` | Landing |
+| `login.php` / `dashboard.php` / `ajustes.php` | Panel |
+| `config/db.php` | Conexión (local o Hostinger) |
+| `includes/theme.php` | Colores |
+| `sql/schema.sql` | Toda la base de datos |

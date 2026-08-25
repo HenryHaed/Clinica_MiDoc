@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /login.php
+Disallow: /recuperar.php
+Disallow: /dashboard.php
+Disallow: /ajustes.php
+Disallow: /api/
+Disallow: /config/
+Disallow: /includes/
+Disallow: /sql/
+Disallow: /storage/
+Disallow: /src/
+
+# Preferible usar robots.php (Sitemap absoluto). Si tu hosting sirve este .txt, añade:
+# Sitemap: https://TU-DOMINIO.com/sitemap.php

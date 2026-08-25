@@ -77,7 +77,7 @@ if (!function_exists('admin_item_active')) {
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<meta name="theme-color" content="#D9EEE1"/>
+<meta name="theme-color" content="<?= htmlspecialchars(theme_color('mist', '#D9EEE1'), ENT_QUOTES, 'UTF-8') ?>"/>
 <title><?= htmlspecialchars($pageTitleAdmin, ENT_QUOTES, 'UTF-8') ?></title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lexend:wght@500;600&display=swap" rel="stylesheet"/>
@@ -123,53 +123,62 @@ if (!function_exists('admin_item_active')) {
 </script>
 <style>
   .admin-bottom-nav { padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px)); }
-  .admin-bottom-nav a.is-active { color: #003E67; }
+  .admin-bottom-nav a.is-active { color: <?= htmlspecialchars(theme_color('cyan', '#003E67'), ENT_QUOTES, 'UTF-8') ?>; }
   .admin-bottom-nav a.is-active .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 500; }
+  .admin-shell-main {
+    width: 100%;
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  @media (min-width: 1536px) {
+    .admin-shell-main { max-width: 1280px; }
+  }
 </style>
 </head>
 <body class="bg-background text-on-background font-body-md min-h-screen flex antialiased overflow-x-hidden">
-<nav class="hidden lg:flex w-64 h-full flex-col border-r border-sage/50 fixed left-0 top-0 bottom-0 z-40 bg-mist font-body-md text-body-md text-primary">
-<div class="p-6 border-b border-outline-variant">
-<h1 class="font-headline-md text-headline-md font-bold text-primary"><?= brand_mark('MiDoc Admin', 'h-9 w-9 rounded-md object-cover shrink-0', 'font-headline-md text-headline-md font-bold text-primary') ?></h1>
-<p class="text-on-surface-variant font-label-caps text-label-caps mt-1"><?= htmlspecialchars($roleSubtitle, ENT_QUOTES, 'UTF-8') ?></p>
+<aside class="hidden lg:flex w-64 xl:w-72 shrink-0 h-full flex-col border-r border-sage/50 fixed left-0 top-0 bottom-0 z-40 bg-mist">
+<div class="px-5 py-5 border-b border-sage/50">
+  <div class="mb-1"><?= brand_mark('MiDoc Admin', 'h-9 w-9 rounded-md object-cover shrink-0', 'font-headline-md text-lg xl:text-xl font-bold text-primary') ?></div>
+  <p class="text-on-surface-variant font-label-caps text-label-caps mt-2 leading-relaxed"><?= htmlspecialchars($roleSubtitle, ENT_QUOTES, 'UTF-8') ?></p>
 </div>
-<div class="flex-1 py-6 flex flex-col gap-2 px-4 overflow-y-auto">
+<div class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
 <?php foreach ($allowedNav as $item): ?>
   <?php $isActive = admin_item_active($navActive, $item); ?>
-  <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 <?= $isActive ? 'text-primary font-bold border-r-4 border-primary bg-surface-container-high' : 'text-on-surface-variant hover:bg-surface-container-highest' ?>" href="<?= htmlspecialchars($item['href'], ENT_QUOTES, 'UTF-8') ?>">
-    <span class="material-symbols-outlined"><?= htmlspecialchars($item['icon'], ENT_QUOTES, 'UTF-8') ?></span>
-    <span><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
+  <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors <?= $isActive ? 'text-primary font-bold bg-surface-container-high border border-primary/20' : 'text-on-surface-variant hover:bg-surface-container-highest border border-transparent' ?>" href="<?= htmlspecialchars($item['href'], ENT_QUOTES, 'UTF-8') ?>">
+    <span class="material-symbols-outlined shrink-0"><?= htmlspecialchars($item['icon'], ENT_QUOTES, 'UTF-8') ?></span>
+    <span class="text-sm leading-snug"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
   </a>
 <?php endforeach; ?>
 </div>
-<div class="p-4 border-t border-outline-variant">
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-colors mb-2" href="index.php" target="_blank">
+<div class="p-3 border-t border-sage/50 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-highest transition-colors" href="index.php" target="_blank" rel="noopener noreferrer">
 <span class="material-symbols-outlined">public</span>
-<span>Ver sitio</span>
+<span class="text-sm font-bold">Ver sitio</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-colors" href="dashboard.php?logout=1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-highest transition-colors" href="dashboard.php?logout=1">
 <span class="material-symbols-outlined">logout</span>
-<span>Cerrar sesión</span>
+<span class="text-sm font-bold">Cerrar sesión</span>
 </a>
 </div>
-</nav>
+</aside>
 
-<div class="flex-1 w-full lg:ml-64 flex flex-col min-h-screen">
-<header class="flex justify-between items-center w-full px-4 sm:px-6 lg:px-8 py-3 h-14 lg:h-16 border-b border-sage/40 bg-mist/90 backdrop-blur-md fixed top-0 left-0 right-0 lg:left-64 z-30 font-label-caps text-label-caps">
+<div class="flex-1 w-full lg:ml-64 xl:ml-72 flex flex-col min-h-screen min-w-0">
+<header class="flex justify-between items-center w-full px-4 sm:px-6 xl:px-8 py-3 h-14 lg:h-16 border-b border-sage/40 bg-mist/95 backdrop-blur-md fixed top-0 left-0 right-0 lg:left-64 xl:left-72 z-30">
 <div class="flex items-center gap-3 min-w-0">
   <img src="<?= htmlspecialchars(brand_logo_src(), ENT_QUOTES, 'UTF-8') ?>" alt="MiDoc" class="lg:hidden h-8 w-8 rounded-md object-cover shrink-0"/>
-  <h2 class="font-headline-md text-base sm:text-lg lg:text-headline-md font-bold text-primary truncate"><?= htmlspecialchars($headerTitle ?? 'Panel', ENT_QUOTES, 'UTF-8') ?></h2>
+  <h2 class="font-headline-md text-base sm:text-lg xl:text-xl font-bold text-primary truncate"><?= htmlspecialchars($headerTitle ?? 'Panel', ENT_QUOTES, 'UTF-8') ?></h2>
 </div>
-<div class="flex items-center gap-2 sm:gap-4 shrink-0">
-  <div class="hidden md:block text-right">
-    <p class="font-body-md text-sm font-bold text-on-background normal-case tracking-normal"><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></p>
-    <p class="text-on-surface-variant"><?= htmlspecialchars($rolNombre, ENT_QUOTES, 'UTF-8') ?></p>
+<div class="flex items-center gap-2 sm:gap-3 shrink-0">
+  <div class="hidden md:block text-right max-w-[12rem] xl:max-w-[16rem]">
+    <p class="font-body-md text-sm font-bold text-on-background truncate"><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></p>
+    <p class="text-xs text-on-surface-variant truncate"><?= htmlspecialchars($rolNombre, ENT_QUOTES, 'UTF-8') ?></p>
   </div>
-  <span class="hidden sm:inline-flex items-center rounded-full bg-primary-container/25 text-primary px-2.5 py-1 font-label-caps text-label-caps uppercase"><?= htmlspecialchars($rolSlug, ENT_QUOTES, 'UTF-8') ?></span>
+  <span class="hidden sm:inline-flex items-center rounded-full bg-primary-container/25 text-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"><?= htmlspecialchars($rolSlug, ENT_QUOTES, 'UTF-8') ?></span>
   <a href="dashboard.php?logout=1" class="lg:hidden w-11 h-11 inline-flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high" aria-label="Cerrar sesión">
     <span class="material-symbols-outlined">logout</span>
   </a>
 </div>
 </header>
-<main class="flex-1 mt-14 lg:mt-16 p-4 sm:p-6 lg:p-section-padding-desktop pb-28 lg:pb-section-padding-desktop">
-<div class="max-w-container-max mx-auto space-y-6 lg:space-y-8">
+<main class="flex-1 mt-14 lg:mt-16 px-4 sm:px-6 xl:px-8 py-5 sm:py-6 lg:py-8 pb-28 lg:pb-10 min-w-0">
+<div class="admin-shell-main space-y-5 lg:space-y-6">

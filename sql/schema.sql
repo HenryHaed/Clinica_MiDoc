@@ -1,24 +1,27 @@
 -- =============================================================================
--- Clínica Mi Doc — esquema MySQL / MariaDB (v3)
+-- Clínica Mi Doc — esquema único MySQL / MariaDB (v4)
 -- Archivo: sql/schema.sql
--- Uso: phpMyAdmin → pestaña SQL → pegar y ejecutar
---      o: mysql -u root < sql/schema.sql
+-- Incluye: tablas + roles + usuarios + sede + especialidades + servicios + CMS
+--
+-- LOCAL (XAMPP)
+--   1) phpMyAdmin → Nueva → clinica_mi_doc (utf8mb4_unicode_ci)
+--   2) Selecciona esa BD → Importar este archivo
+--
+-- HOSTINGER PREMIUM
+--   1) hPanel → Bases de datos MySQL → crear BD y usuario (NO uses CREATE DATABASE aquí)
+--   2) phpMyAdmin → selecciona TU base (ej. u123456789_midoc)
+--   3) Importar este archivo
 -- =============================================================================
 
 SET NAMES utf8mb4;
 SET time_zone = '+00:00';
 SET FOREIGN_KEY_CHECKS = 0;
 
-CREATE DATABASE IF NOT EXISTS clinica_mi_doc
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE clinica_mi_doc;
-
 -- -----------------------------------------------------------------------------
--- Limpieza (idempotente para reimportar en local)
+-- Limpieza (idempotente para reimportar)
 -- -----------------------------------------------------------------------------
 DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS password_resets;
 DROP TABLE IF EXISTS visitas;
 DROP TABLE IF EXISTS cms_contenidos;
 DROP TABLE IF EXISTS documentos;
@@ -362,6 +365,28 @@ CREATE TABLE visitas (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------------------------------
+-- password_resets: códigos de recuperación por correo
+-- -----------------------------------------------------------------------------
+CREATE TABLE password_resets (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  usuario_id INT UNSIGNED NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  code_hash VARCHAR(255) NOT NULL,
+  attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  ip VARCHAR(45) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_password_resets_email (email),
+  KEY idx_password_resets_usuario (usuario_id),
+  KEY idx_password_resets_expires (expires_at),
+  CONSTRAINT fk_password_resets_usuario
+    FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------------------------------
 -- audit_log: bitácora de acciones del panel
 -- -----------------------------------------------------------------------------
 CREATE TABLE audit_log (
@@ -397,7 +422,7 @@ INSERT INTO roles (id, slug, nombre, descripcion) VALUES
 -- Usuario bootstrap + cuentas de panel
 -- Contraseña para todos: Password123$
 INSERT INTO usuarios (id, rol_id, email, password_hash, nombre, activo) VALUES
-(1, 1, 'admin@clinicamidoc.com', '$2y$10$8aR1KUc.wHLvs1oS.O5XKe/4mY3V4ikXpoq6a7CNfTQcRT9ZFrCnu', 'Super Admin MiDoc', 1),
+(1, 1, 'midochernandigital@gmail.com', '$2y$10$8aR1KUc.wHLvs1oS.O5XKe/4mY3V4ikXpoq6a7CNfTQcRT9ZFrCnu', 'Super Admin MiDoc', 1),
 (2, 2, 'gestor@clinicamidoc.com', '$2y$10$8aR1KUc.wHLvs1oS.O5XKe/4mY3V4ikXpoq6a7CNfTQcRT9ZFrCnu', 'Admin Gestión', 1),
 (3, 3, 'doctor@clinicamidoc.com', '$2y$10$8aR1KUc.wHLvs1oS.O5XKe/4mY3V4ikXpoq6a7CNfTQcRT9ZFrCnu', 'Dr. Hernán Caihuara', 1),
 (4, 4, 'enfermero@clinicamidoc.com', '$2y$10$8aR1KUc.wHLvs1oS.O5XKe/4mY3V4ikXpoq6a7CNfTQcRT9ZFrCnu', 'Enfermería MiDoc', 1),
@@ -408,7 +433,7 @@ INSERT INTO sedes (id, nombre, direccion, telefono, maps_url, horarios, es_princ
 (1, 'Clínica Saint Jude',
  'Piso 1, Plaza El Radialista N° 102, Zona San Clemente',
  '70688374',
- 'https://www.google.com/maps/search/?api=1&query=Plaza+El+Radialista+102+Zona+San+Clemente',
+ 'https://maps.app.goo.gl/SeunT1EjTJ2AG4Nn9',
  'Lunes a Viernes: 8:00 AM - 6:00 PM\nSábados: Previa cita',
  1, 1);
 
@@ -459,10 +484,13 @@ INSERT INTO cms_contenidos (seccion, clave, tipo, valor, etiqueta, updated_by) V
 ('config', 'config.sitio_nombre', 'texto', 'MiDoc', 'Nombre del sitio', 1),
 ('config', 'config.telefono', 'texto', '70688374', 'Teléfono principal', 1),
 ('config', 'config.email', 'texto', 'info@clinicamidoc.com', 'Email de contacto', 1),
-('seo', 'seo.titulo', 'texto', 'MiDoc - Salud Primordial', 'Título SEO / pestaña', 1),
+('seo', 'seo.titulo', 'texto', 'MiDoc - Cirugía General y Pediátrica | Dr. Hernán Caihuara', 'Título SEO (Google)', 1),
 ('seo', 'seo.descripcion', 'texto',
- 'Dr. Hernán Caihuara Salas. Cirujano General Adultos y Cirujano Pediatra. Atención médica de excelencia en Clínica Saint Jude.',
- 'Meta descripción', 1),
+ 'Clínica MiDoc. Dr. Hernán Caihuara Salas, Cirujano General Adultos y Cirujano Pediatra en Clínica Saint Jude. Agenda tu cita.',
+ 'Descripción SEO (Google)', 1),
+('seo', 'seo.keywords', 'texto',
+ 'MiDoc, cirugía general, cirugía pediátrica, Dr Hernán Caihuara, Clínica Saint Jude, cirujano, laparoscópica',
+ 'Palabras clave SEO', 1),
 ('hero', 'hero.badge', 'texto', 'Tu Salud es Primordial', 'Badge del hero', 1),
 ('hero', 'hero.titulo', 'texto', 'Atención médica de excelencia para ti y tu familia.', 'Título principal', 1),
 ('hero', 'hero.subtitulo', 'texto',
@@ -476,8 +504,6 @@ INSERT INTO cms_contenidos (seccion, clave, tipo, valor, etiqueta, updated_by) V
  'Imagen lateral del hero (URL o path)', 1),
 ('hero', 'hero.stat_experiencia', 'numero', '15', 'Años de experiencia', 1),
 ('hero', 'hero.stat_cirugias', 'numero', '1000', 'Cirugías exitosas', 1),
-('hero', 'hero.card_titulo', 'texto', 'Tecnología de Vanguardia', 'Título card hero', 1),
-('hero', 'hero.card_texto', 'texto', 'Equipamiento médico moderno para procedimientos seguros y precisos.', 'Texto card hero', 1),
 ('especialista', 'especialista.nombre', 'texto', 'Dr. Hernán Caihuara Salas', 'Nombre del doctor', 1),
 ('especialista', 'especialista.rol', 'texto', 'Cirujano General “Adultos” y Cirujano Pediatra', 'Especialidad visible', 1),
 ('especialista', 'especialista.bio', 'texto',
@@ -495,20 +521,32 @@ INSERT INTO cms_contenidos (seccion, clave, tipo, valor, etiqueta, updated_by) V
  'Déjanos tus datos y nos pondremos en contacto contigo a la brevedad para confirmar tu horario de atención.',
  'Subtítulo formulario', 1),
 ('ubicacion', 'ubicacion.titulo', 'texto', 'Encuéntranos en Clínica Saint Jude', 'Título ubicación', 1),
-('ubicacion', 'ubicacion.direccion', 'texto', 'Piso 1, Plaza El Radialista N° 102, Zona San Clemente', 'Dirección visible', 1),
+('ubicacion', 'ubicacion.direccion', 'texto', 'Piso 1, Plaza El Radialista N° 102, Zona San Clemente', 'Dirección completa', 1),
 ('ubicacion', 'ubicacion.telefono', 'texto', '70688374', 'Teléfono visible', 1),
-('ubicacion', 'ubicacion.horarios', 'texto', 'Lunes a Viernes: 8:00 AM - 6:00 PM\nSábados: Previa Cita', 'Horarios', 1),
+('ubicacion', 'ubicacion.horarios', 'texto', 'Lunes a Viernes: 8:00 AM - 6:00 PM\nSábados: Previa Cita', 'Horarios de atención', 1),
 ('ubicacion', 'ubicacion.maps_url', 'url',
- 'https://www.google.com/maps/search/?api=1&query=Plaza+El+Radialista+102+Zona+San+Clemente',
- 'Link Cómo llegar', 1),
+ 'https://maps.app.goo.gl/SeunT1EjTJ2AG4Nn9',
+ 'Link Google Maps (abrir en app/web)', 1),
+('ubicacion', 'ubicacion.maps_embed', 'url',
+ 'https://www.google.com/maps?q=Plaza+El+Radialista+102,+Zona+San+Clemente&output=embed',
+ 'URL embed del mapa (iframe)', 1),
 ('ubicacion', 'ubicacion.mapa_imagen', 'imagen',
  'https://lh3.googleusercontent.com/aida-public/AB6AXuBg1ToGGMqGq3xdnCJhsXVMxOceBu_gwvZ84s5Tc04DinwW6azM-guuPPDFTkypubfv_YhfHHEfYwMbLy7RKa1Rx5uqFi6LR4wFAociBNow7DarvnWo9v5QjNXNMtNUNCMDVCg5ij69JJErG1-fWNti4UQSxqJDQ_EDmfkHMSVlPwz_6ARp7UQofCMZoD8q-SuHYhGsJJs9nk1-vxK2sAZLlBApRn2meaBy7Px02nxWvnqr5EP3GCl7',
- 'Imagen del mapa', 1),
-('ubicacion', 'ubicacion.clinica', 'texto', 'Clínica Saint Jude', 'Nombre clínica (mapa)', 1),
-('ubicacion', 'ubicacion.zona', 'texto', 'Zona San Clemente', 'Zona (mapa)', 1),
+ 'Imagen de fondo (sección mapa)', 1),
+('ubicacion', 'ubicacion.clinica', 'texto', 'Clínica Saint Jude', 'Nombre clínica', 1),
+('ubicacion', 'ubicacion.zona', 'texto', 'Zona San Clemente', 'Zona', 1),
 ('footer', 'footer.texto', 'texto',
  'Atención médica de excelencia por el Dr. Hernán Caihuara Salas, brindando cuidado experto y compasivo para toda la familia.',
- 'Texto del footer', 1);
+ 'Texto del footer', 1),
+('theme', 'theme.cyan', 'color', '#003E67', 'Cian / azul principal', 1),
+('theme', 'theme.yellow', 'color', '#F9D423', 'Amarillo (botones CTA)', 1),
+('theme', 'theme.orange', 'color', '#FF9100', 'Naranja (acento)', 1),
+('theme', 'theme.teal', 'color', '#169A8A', 'Teal / verde primario', 1),
+('theme', 'theme.mint', 'color', '#3DE2AD', 'Menta', 1),
+('theme', 'theme.sage', 'color', '#B2D9C2', 'Sage (bordes)', 1),
+('theme', 'theme.mist', 'color', '#D9EEE1', 'Fondo (mist)', 1),
+('theme', 'theme.text', 'color', '#14352F', 'Texto principal', 1),
+('theme', 'theme.text_muted', 'color', '#3A5F56', 'Texto secundario', 1);
 
 -- Cita de ejemplo (formulario público) — para probar el dashboard
 INSERT INTO citas (
@@ -533,16 +571,17 @@ INSERT INTO visitas (fecha, ip_hash, pagina, referrer, user_agent, created_at) V
 
 -- Audit de bootstrap
 INSERT INTO audit_log (usuario_id, accion, tabla_afectada, registro_id, payload_json, ip) VALUES
-(1, 'seed', 'usuarios', '1', JSON_OBJECT('evento', 'schema_import', 'version', 'v3'), '127.0.0.1');
+(1, 'seed', 'usuarios', '1', JSON_OBJECT('evento', 'schema_import', 'version', 'v4'), '127.0.0.1');
 
 -- =============================================================================
--- Notas
--- =============================================================================
--- 1) Tablas previstas sin filas semilla (listas para el futuro):
---    pacientes, antecedentes, consultas, documentos
--- 2) Regenerar password del admin:
---    C:\xampp\php\php.exe -r "echo password_hash('NUEVA_CLAVE', PASSWORD_DEFAULT);"
---    Luego: UPDATE usuarios SET password_hash='...' WHERE id=1;
--- 3) En Hostinger: crea la BD desde el panel (puede tener prefijo uXXXX_)
---    y ejecuta este script cambiando el nombre en CREATE/USE si hace falta.
+-- Cuentas de panel (todas: Password123$) — cámbialas en producción
+--   admin@clinicamidoc.com      super_admin
+--   gestor@clinicamidoc.com     admin
+--   doctor@clinicamidoc.com     doctor
+--   enfermero@clinicamidoc.com  enfermero
+--   recepcion@clinicamidoc.com  recepcion
+--
+-- Regenerar hash:
+--   php -r "echo password_hash('NUEVA_CLAVE', PASSWORD_DEFAULT);"
+--   UPDATE usuarios SET password_hash='...' WHERE email='admin@clinicamidoc.com';
 -- =============================================================================

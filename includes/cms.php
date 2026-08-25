@@ -25,8 +25,9 @@ function cms_default_defs(): array
         'config.sitio_nombre' => ['seccion' => 'config', 'tipo' => 'texto', 'etiqueta' => 'Nombre del sitio', 'valor' => 'MiDoc'],
         'config.telefono' => ['seccion' => 'config', 'tipo' => 'texto', 'etiqueta' => 'Teléfono principal', 'valor' => '70688374'],
         'config.email' => ['seccion' => 'config', 'tipo' => 'texto', 'etiqueta' => 'Email de contacto', 'valor' => 'info@clinicamidoc.com'],
-        'seo.titulo' => ['seccion' => 'seo', 'tipo' => 'texto', 'etiqueta' => 'Título SEO', 'valor' => 'MiDoc - Salud Primordial'],
-        'seo.descripcion' => ['seccion' => 'seo', 'tipo' => 'texto', 'etiqueta' => 'Meta descripción', 'valor' => 'Dr. Hernán Caihuara Salas. Cirujano General Adultos y Cirujano Pediatra.'],
+        'seo.titulo' => ['seccion' => 'seo', 'tipo' => 'texto', 'etiqueta' => 'Título SEO (Google)', 'valor' => 'MiDoc - Cirugía General y Pediátrica | Dr. Hernán Caihuara'],
+        'seo.descripcion' => ['seccion' => 'seo', 'tipo' => 'texto', 'etiqueta' => 'Descripción SEO (Google)', 'valor' => 'Clínica MiDoc. Dr. Hernán Caihuara Salas, Cirujano General Adultos y Cirujano Pediatra en Clínica Saint Jude. Agenda tu cita.'],
+        'seo.keywords' => ['seccion' => 'seo', 'tipo' => 'texto', 'etiqueta' => 'Palabras clave SEO', 'valor' => 'MiDoc, cirugía general, cirugía pediátrica, Dr Hernán Caihuara, Clínica Saint Jude, cirujano, laparoscópica'],
         'hero.badge' => ['seccion' => 'hero', 'tipo' => 'texto', 'etiqueta' => 'Badge del hero', 'valor' => 'Tu Salud es Primordial'],
         'hero.titulo' => ['seccion' => 'hero', 'tipo' => 'texto', 'etiqueta' => 'Título principal', 'valor' => 'Atención médica de excelencia para ti y tu familia.'],
         'hero.subtitulo' => ['seccion' => 'hero', 'tipo' => 'texto', 'etiqueta' => 'Subtítulo hero', 'valor' => 'Dr. Hernán Caihuara Salas. Cirujano General "Adultos" y Cirujano Pediatra.'],
@@ -34,8 +35,6 @@ function cms_default_defs(): array
         'hero.imagen' => ['seccion' => 'hero', 'tipo' => 'imagen', 'etiqueta' => 'Imagen lateral del hero', 'valor' => $heroSide],
         'hero.stat_experiencia' => ['seccion' => 'hero', 'tipo' => 'numero', 'etiqueta' => 'Años de experiencia', 'valor' => '15'],
         'hero.stat_cirugias' => ['seccion' => 'hero', 'tipo' => 'numero', 'etiqueta' => 'Cirugías exitosas', 'valor' => '1000'],
-        'hero.card_titulo' => ['seccion' => 'hero', 'tipo' => 'texto', 'etiqueta' => 'Título card hero', 'valor' => 'Tecnología de Vanguardia'],
-        'hero.card_texto' => ['seccion' => 'hero', 'tipo' => 'texto', 'etiqueta' => 'Texto card hero', 'valor' => 'Equipamiento médico moderno para procedimientos seguros y precisos.'],
         'especialista.nombre' => ['seccion' => 'especialista', 'tipo' => 'texto', 'etiqueta' => 'Nombre del doctor', 'valor' => 'Dr. Hernán Caihuara Salas'],
         'especialista.rol' => ['seccion' => 'especialista', 'tipo' => 'texto', 'etiqueta' => 'Especialidad visible', 'valor' => 'Cirujano General “Adultos” y Cirujano Pediatra'],
         'especialista.foto' => ['seccion' => 'especialista', 'tipo' => 'imagen', 'etiqueta' => 'Foto del doctor (navbar)', 'valor' => $doctor],
@@ -43,13 +42,23 @@ function cms_default_defs(): array
         'servicios.subtitulo' => ['seccion' => 'servicios', 'tipo' => 'texto', 'etiqueta' => 'Subtítulo servicios', 'valor' => 'Procedimientos quirúrgicos especializados con enfoque en la rápida recuperación.'],
         'contacto.titulo' => ['seccion' => 'contacto', 'tipo' => 'texto', 'etiqueta' => 'Título formulario', 'valor' => 'Agenda tu Cita Médica'],
         'contacto.subtitulo' => ['seccion' => 'contacto', 'tipo' => 'texto', 'etiqueta' => 'Subtítulo formulario', 'valor' => 'Déjanos tus datos y nos pondremos en contacto contigo a la brevedad.'],
-        'ubicacion.clinica' => ['seccion' => 'ubicacion', 'tipo' => 'texto', 'etiqueta' => 'Nombre clínica (mapa)', 'valor' => 'Clínica Saint Jude'],
-        'ubicacion.zona' => ['seccion' => 'ubicacion', 'tipo' => 'texto', 'etiqueta' => 'Zona (mapa)', 'valor' => 'Zona San Clemente'],
-        'ubicacion.direccion' => ['seccion' => 'ubicacion', 'tipo' => 'texto', 'etiqueta' => 'Dirección', 'valor' => "Piso 1, Plaza El Radialista N° 102,\nZona San Clemente"],
-        'ubicacion.horarios' => ['seccion' => 'ubicacion', 'tipo' => 'texto', 'etiqueta' => 'Horarios', 'valor' => "Lunes a Viernes: 8:00 AM - 6:00 PM\nSábados: Previa Cita"],
-        'ubicacion.maps_url' => ['seccion' => 'ubicacion', 'tipo' => 'url', 'etiqueta' => 'Link Cómo llegar', 'valor' => 'https://www.google.com/maps/search/?api=1&query=Plaza+El+Radialista+102+Zona+San+Clemente'],
-        'ubicacion.mapa_imagen' => ['seccion' => 'ubicacion', 'tipo' => 'imagen', 'etiqueta' => 'Imagen del mapa', 'valor' => $map],
+        'ubicacion.clinica' => ['seccion' => 'ubicacion', 'tipo' => 'texto', 'etiqueta' => 'Nombre clínica', 'valor' => 'Clínica Saint Jude'],
+        'ubicacion.zona' => ['seccion' => 'ubicacion', 'tipo' => 'texto', 'etiqueta' => 'Zona', 'valor' => 'Zona San Clemente'],
+        'ubicacion.direccion' => ['seccion' => 'ubicacion', 'tipo' => 'texto', 'etiqueta' => 'Dirección completa', 'valor' => "Piso 1, Plaza El Radialista N° 102,\nZona San Clemente"],
+        'ubicacion.horarios' => ['seccion' => 'ubicacion', 'tipo' => 'texto', 'etiqueta' => 'Horarios de atención', 'valor' => "Lunes a Viernes: 8:00 AM - 6:00 PM\nSábados: Previa Cita"],
+        'ubicacion.maps_url' => ['seccion' => 'ubicacion', 'tipo' => 'url', 'etiqueta' => 'Link Google Maps (abrir en app/web)', 'valor' => 'https://maps.app.goo.gl/SeunT1EjTJ2AG4Nn9'],
+        'ubicacion.maps_embed' => ['seccion' => 'ubicacion', 'tipo' => 'url', 'etiqueta' => 'URL embed del mapa (iframe)', 'valor' => 'https://www.google.com/maps?q=Plaza+El+Radialista+102,+Zona+San+Clemente&output=embed'],
+        'ubicacion.mapa_imagen' => ['seccion' => 'ubicacion', 'tipo' => 'imagen', 'etiqueta' => 'Imagen de fondo (sección mapa)', 'valor' => $map],
         'footer.texto' => ['seccion' => 'footer', 'tipo' => 'texto', 'etiqueta' => 'Texto del footer', 'valor' => 'Atención médica de excelencia por el Dr. Hernán Caihuara Salas.'],
+        'theme.cyan' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Cian / azul principal', 'valor' => '#003E67'],
+        'theme.yellow' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Amarillo (botones CTA)', 'valor' => '#F9D423'],
+        'theme.orange' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Naranja (acento)', 'valor' => '#FF9100'],
+        'theme.teal' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Teal / verde primario', 'valor' => '#169A8A'],
+        'theme.mint' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Menta', 'valor' => '#3DE2AD'],
+        'theme.sage' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Sage (bordes)', 'valor' => '#B2D9C2'],
+        'theme.mist' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Fondo (mist)', 'valor' => '#D9EEE1'],
+        'theme.text' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Texto principal', 'valor' => '#14352F'],
+        'theme.text_muted' => ['seccion' => 'theme', 'tipo' => 'color', 'etiqueta' => 'Texto secundario', 'valor' => '#3A5F56'],
     ];
 }
 
@@ -69,6 +78,30 @@ function cms_ensure_defaults(?int $userId = null): void
             }
             $ins->execute([$def['seccion'], $clave, $def['tipo'], $def['valor'], $def['etiqueta'], $userId]);
         }
+
+        // Migración suave: enlace Maps corto oficial (solo si aún está el seed antiguo de búsqueda)
+        $pdo->exec(
+            "UPDATE cms_contenidos
+             SET valor = 'https://maps.app.goo.gl/SeunT1EjTJ2AG4Nn9',
+                 etiqueta = 'Link Google Maps (abrir en app/web)',
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE clave = 'ubicacion.maps_url'
+               AND (
+                 valor LIKE '%google.com/maps/search%'
+                 OR valor = ''
+                 OR valor IS NULL
+               )"
+        );
+        $pdo->exec(
+            "UPDATE sedes
+             SET maps_url = 'https://maps.app.goo.gl/SeunT1EjTJ2AG4Nn9'
+             WHERE es_principal = 1
+               AND (
+                 maps_url LIKE '%google.com/maps/search%'
+                 OR maps_url = ''
+                 OR maps_url IS NULL
+               )"
+        );
     } catch (Throwable $e) {
         // Landing sigue con fallbacks locales
     }
@@ -139,11 +172,12 @@ function cms_set(string $clave, string $valor, ?int $userId = null): void
 function cms_rows_grouped(): array
 {
     cms_ensure_defaults();
+    $known = cms_default_defs();
     try {
         $rows = db()->query(
             'SELECT id, seccion, clave, tipo, valor, etiqueta
              FROM cms_contenidos
-             ORDER BY FIELD(seccion, \'config\',\'seo\',\'hero\',\'especialista\',\'servicios\',\'contacto\',\'ubicacion\',\'footer\'), clave'
+             ORDER BY FIELD(seccion, \'config\',\'seo\',\'hero\',\'especialista\',\'servicios\',\'contacto\',\'ubicacion\',\'footer\',\'theme\'), clave'
         )->fetchAll(PDO::FETCH_ASSOC);
     } catch (Throwable $e) {
         return [];
@@ -151,6 +185,10 @@ function cms_rows_grouped(): array
 
     $grouped = [];
     foreach ($rows as $row) {
+        $clave = (string) ($row['clave'] ?? '');
+        if ($clave === '' || !isset($known[$clave])) {
+            continue;
+        }
         $grouped[$row['seccion']][] = $row;
     }
     return $grouped;

@@ -200,4 +200,53 @@
         statusLabel.textContent = 'Sistema: sin respuesta API';
       });
   }
+
+  // ----- Ubicación modal + Google Maps -----
+  const ubicacionModal = document.getElementById('ubicacion-modal');
+  const ubicacionIframe = document.getElementById('ubicacion-map-iframe');
+
+  function openUbicacionModal() {
+    if (!ubicacionModal) return;
+    if (ubicacionIframe && !ubicacionIframe.getAttribute('src')) {
+      const src = ubicacionIframe.getAttribute('data-src');
+      if (src) ubicacionIframe.setAttribute('src', src);
+    }
+    ubicacionModal.hidden = false;
+    ubicacionModal.classList.add('is-open');
+    ubicacionModal.classList.remove('hidden');
+    document.body.classList.add('ubicacion-modal-open');
+    setLandNav('ubicacion');
+  }
+
+  function closeUbicacionModal() {
+    if (!ubicacionModal) return;
+    ubicacionModal.classList.remove('is-open');
+    ubicacionModal.classList.add('hidden');
+    ubicacionModal.hidden = true;
+    document.body.classList.remove('ubicacion-modal-open');
+  }
+
+  document.querySelectorAll('[data-ubicacion-modal]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      openUbicacionModal();
+    });
+  });
+
+  document.querySelectorAll('[data-ubicacion-close]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeUbicacionModal();
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && ubicacionModal && !ubicacionModal.hidden) {
+      closeUbicacionModal();
+    }
+  });
+
+  if (window.location.hash === '#ubicacion') {
+    openUbicacionModal();
+  }
 })();

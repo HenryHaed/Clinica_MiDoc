@@ -69,6 +69,8 @@ if ($errors !== []) {
     exit;
 }
 
+require_once dirname(__DIR__) . '/config/db.php';
+
 $record = [
     'id' => bin2hex(random_bytes(8)),
     'nombre' => $nombre,
@@ -79,28 +81,62 @@ $record = [
     'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
 ];
 
-$storageDir = dirname(__DIR__) . '/storage';
-$storageFile = $storageDir . '/citas.json';
+$saved = false;
+$pdo = db();
+if ($pdo instanceof PDO) {
+    try {
+        $svcStmt = $pdo->prepare('SELECT id FROM servicios WHERE slug = ? AND (deleted_at IS NULL) LIMIT 1');
+        $svcStmt->execute([$servicio]);
+        $servicioId = $svcStmt->fetchColumn();
+        $servicioId = $servicioId !== false ? (int) $servicioId : null;
 
-if (!is_dir($storageDir) && !mkdir($storageDir, 0755, true) && !is_dir($storageDir)) {
-    http_response_code(500);
-    echo json_encode(['ok' => false, 'message' => 'No se pudo crear el almacenamiento.'], JSON_UNESCAPED_UNICODE);
-    exit;
+        $ins = $pdo->prepare(
+            'INSERT INTO citas (
+                servicio_id, nombre_contacto, telefono_contacto, mensaje,
+                estado, origen, ip, user_agent
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        $ua = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
+        $ins->execute([
+            $servicioId,
+            $nombre,
+            $telefono,
+            $mensaje !== '' ? $mensaje : null,
+            'pendiente',
+            'web_publica',
+            $record['ip'],
+            $ua !== '' ? $ua : null,
+        ]);
+        $saved = true;
+    } catch (Throwable $e) {
+        $saved = false;
+    }
 }
 
-$existing = [];
-if (is_file($storageFile)) {
-    $json = file_get_contents($storageFile);
-    $parsed = json_decode($json ?: '[]', true);
-    $existing = is_array($parsed) ? $parsed : [];
-}
+if (!$saved) {
+    $storageDir = dirname(__DIR__) . '/storage';
+    $storageFile = $storageDir . '/citas.json';
 
-$existing[] = $record;
+    if (!is_dir($storageDir) && !mkdir($storageDir, 0755, true) && !is_dir($storageDir)) {
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'message' => 'No se pudo crear el almacenamiento.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 
-if (file_put_contents($storageFile, json_encode($existing, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX) === false) {
-    http_response_code(500);
-    echo json_encode(['ok' => false, 'message' => 'No se pudo guardar la solicitud.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    $existing = [];
+    if (is_file($storageFile)) {
+        $json = file_get_contents($storageFile);
+        $parsed = json_decode($json ?: '[]', true);
+        $existing = is_array($parsed) ? $parsed : [];
+    }
+
+    $existing[] = $record;
+
+    if (file_put_contents($storageFile, json_encode($existing, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX) === false) {
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'message' => 'No se pudo guardar la solicitud.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 }
 
 http_response_code(201);

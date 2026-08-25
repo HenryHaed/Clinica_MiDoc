@@ -29,7 +29,6 @@ function db_config(): array
     }
 
     if (db_is_local()) {
-        // XAMPP defaults — adjust as needed
         return [
             'host' => '127.0.0.1',
             'name' => 'clinica_mi_doc',
@@ -39,12 +38,18 @@ function db_config(): array
         ];
     }
 
-    // Hostinger — replace with your panel credentials before going live
+    $hostinger = __DIR__ . '/db.hostinger.php';
+    if (is_file($hostinger)) {
+        /** @var array $cfg */
+        $cfg = require $hostinger;
+        return $cfg;
+    }
+
     return [
         'host' => 'localhost',
-        'name' => 'u000000000_clinicamidoc',
-        'user' => 'u000000000_admin',
-        'pass' => 'CHANGE_ME_HOSTINGER_PASSWORD',
+        'name' => 'CAMBIAR_NOMBRE_BD',
+        'user' => 'CAMBIAR_USUARIO',
+        'pass' => 'CAMBIAR_PASSWORD',
         'charset' => 'utf8mb4',
     ];
 }

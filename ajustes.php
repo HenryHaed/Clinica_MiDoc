@@ -8,6 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/cms.php';
 require_once __DIR__ . '/includes/upload.php';
+require_once __DIR__ . '/includes/theme.php';
 
 auth_start();
 
@@ -31,7 +32,7 @@ $userId = (int) $user['id'];
 
 cms_ensure_defaults($userId);
 
-$allowedTabs = ['contenido', 'imagenes', 'servicios', 'especialidades'];
+$allowedTabs = ['contenido', 'colores', 'imagenes', 'servicios', 'especialidades'];
 $tab = (string) ($_GET['tab'] ?? 'contenido');
 if (!in_array($tab, $allowedTabs, true)) {
     $tab = 'contenido';
@@ -60,22 +61,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if ($action === 'save_cms_text') {
             $keys = $_POST['cms'] ?? [];
+            $seccion = trim((string) ($_POST['seccion'] ?? ''));
             if (!is_array($keys)) {
                 throw new RuntimeException('Datos inválidos.');
             }
+            if ($seccion === '' || !preg_match('/^[a-z0-9_]+$/i', $seccion)) {
+                throw new RuntimeException('Sección no válida.');
+            }
+            $defs = cms_default_defs();
+            $saved = 0;
             foreach ($keys as $clave => $valor) {
                 $clave = (string) $clave;
                 if (!preg_match('/^[a-z0-9_.]+$/i', $clave)) {
                     continue;
                 }
-                // No sobrescribir imágenes desde este form
-                $defs = cms_default_defs();
+                if (($defs[$clave]['seccion'] ?? '') !== $seccion) {
+                    continue;
+                }
                 if (($defs[$clave]['tipo'] ?? '') === 'imagen') {
                     continue;
                 }
+                if (($defs[$clave]['tipo'] ?? '') === 'color') {
+                    continue;
+                }
                 cms_set($clave, trim((string) $valor), $userId);
+                $saved++;
             }
-            ajustes_redirect('contenido', 'Textos de la landing guardados.');
+            if ($saved === 0) {
+                throw new RuntimeException('No hay campos para guardar en esta sección.');
+            }
+            $labels = [
+                'config' => 'Configuración general',
+                'seo' => 'SEO Google',
+                'hero' => 'Hero (portada)',
+                'especialista' => 'Especialista',
+                'servicios' => 'Sección servicios',
+                'contacto' => 'Contacto / citas',
+                'ubicacion' => 'Ubicación / Google Maps',
+                'footer' => 'Footer',
+            ];
+            ajustes_redirect('contenido', 'Guardado: ' . ($labels[$seccion] ?? $seccion) . '.');
+        }
+
+        if ($action === 'save_theme_colors') {
+            $keys = $_POST['cms'] ?? [];
+            if (!is_array($keys)) {
+                throw new RuntimeException('Datos de color inválidos.');
+            }
+            foreach (theme_editable_defs() as $def) {
+                $clave = $def['clave'];
+                $raw = trim((string) ($keys[$clave] ?? ''));
+                $norm = theme_normalize_hex($raw);
+                if ($norm === null) {
+                    throw new RuntimeException('Color inválido en «' . $def['etiqueta'] . '». Usa formato #RRGGBB.');
+                }
+                cms_set($clave, $norm, $userId);
+            }
+            ajustes_redirect('colores', 'Colores guardados. Recarga la landing (Ctrl+F5) para verlos.');
+        }
+
+        if ($action === 'reset_theme_colors') {
+            foreach (theme_editable_defs() as $def) {
+                cms_set($def['clave'], $def['valor'], $userId);
+            }
+            ajustes_redirect('colores', 'Paleta restaurada a los colores originales de MiDoc.');
         }
 
         if ($action === 'save_cms_image') {
@@ -226,13 +275,14 @@ if (isset($_GET['edit_esp'])) {
 
 $sectionLabels = [
     'config' => 'Configuración general',
-    'seo' => 'SEO',
+    'seo' => 'SEO Google',
     'hero' => 'Hero (portada)',
     'especialista' => 'Especialista',
     'servicios' => 'Sección servicios',
     'contacto' => 'Contacto / citas',
-    'ubicacion' => 'Ubicación',
+    'ubicacion' => 'Ubicación / Google Maps',
     'footer' => 'Footer',
+    'theme' => 'Colores del sitio',
 ];
 
 $navActive = 'ajustes';
@@ -270,6 +320,7 @@ require __DIR__ . '/includes/admin_chrome_start.php';
 <?php
 $tabs = [
     'contenido' => ['label' => 'Textos', 'icon' => 'edit_note'],
+    'colores' => ['label' => 'Colores', 'icon' => 'palette'],
     'imagenes' => ['label' => 'Imágenes', 'icon' => 'image'],
     'servicios' => ['label' => 'Servicios', 'icon' => 'medical_services'],
     'especialidades' => ['label' => 'Catálogo', 'icon' => 'menu_book'],
@@ -286,65 +337,210 @@ foreach ($tabs as $key => $meta):
 </nav>
 
 <?php if ($tab === 'contenido'): ?>
-<section class="bg-mist border border-sage/50 rounded-2xl p-6 md:p-8">
-  <div class="flex items-center gap-3 mb-8">
+<section class="space-y-6">
+  <div class="flex items-center gap-3 mb-2">
     <span class="w-10 h-10 rounded-xl bg-light-cyan/15 text-cyan-deep flex items-center justify-center"><span class="material-symbols-outlined">edit_note</span></span>
     <div>
       <h3 class="font-headline-md text-lg font-bold text-on-background">Textos y títulos</h3>
-      <p class="text-sm text-on-surface-variant">Los cambios se ven al instante en la landing.</p>
+      <p class="text-sm text-on-surface-variant">Cada sección tiene su propio botón Guardar.</p>
     </div>
   </div>
-  <form method="post" class="space-y-10">
-    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"/>
-    <input type="hidden" name="action" value="save_cms_text"/>
-    <?php foreach ($cmsGrouped as $seccion => $rows): ?>
-      <?php
-        $textRows = array_filter($rows, static fn ($r) => ($r['tipo'] ?? '') !== 'imagen');
-        if ($textRows === []) {
-            continue;
-        }
-      ?>
-      <div class="rounded-xl border border-sage/40 bg-surface-container-lowest/60 p-5">
-        <h4 class="font-label-caps text-label-caps text-cyan-deep mb-4"><?= htmlspecialchars($sectionLabels[$seccion] ?? $seccion, ENT_QUOTES, 'UTF-8') ?></h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <?php foreach ($textRows as $row): ?>
-            <?php
-              $clave = (string) $row['clave'];
-              $isLong = strlen((string) $row['valor']) > 80 || str_contains($clave, 'subtitulo') || str_contains($clave, 'bio') || str_contains($clave, 'texto') || str_contains($clave, 'horarios') || str_contains($clave, 'direccion') || str_contains($clave, 'descripcion');
-            ?>
-            <div class="<?= $isLong ? 'md:col-span-2' : '' ?> space-y-2">
-              <label class="font-label-caps text-label-caps text-on-surface-variant" for="cms-<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>">
-                <?= htmlspecialchars((string) $row['etiqueta'], ENT_QUOTES, 'UTF-8') ?>
-              </label>
-              <?php if ($isLong): ?>
-                <textarea id="cms-<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>"
-                          name="cms[<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>]"
-                          rows="3"
-                          class="w-full rounded-xl border border-outline-variant bg-mist px-4 py-3 font-body-md focus:border-light-cyan focus:ring-1 focus:ring-light-cyan"><?= htmlspecialchars((string) $row['valor'], ENT_QUOTES, 'UTF-8') ?></textarea>
-              <?php else: ?>
-                <input id="cms-<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>"
-                       type="text"
-                       name="cms[<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>]"
-                       value="<?= htmlspecialchars((string) $row['valor'], ENT_QUOTES, 'UTF-8') ?>"
-                       class="w-full rounded-xl border border-outline-variant bg-mist px-4 py-3 font-body-md focus:border-light-cyan focus:ring-1 focus:ring-light-cyan"/>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
-        </div>
+  <?php foreach ($cmsGrouped as $seccion => $rows): ?>
+    <?php
+      if ($seccion === 'theme') {
+          continue;
+      }
+      $textRows = array_values(array_filter($rows, static fn ($r) => ($r['tipo'] ?? '') !== 'imagen' && ($r['tipo'] ?? '') !== 'color'));
+      if ($textRows === []) {
+          continue;
+      }
+    ?>
+    <form method="post" class="rounded-2xl border border-sage/50 bg-mist p-5 md:p-6 space-y-5">
+      <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"/>
+      <input type="hidden" name="action" value="save_cms_text"/>
+      <input type="hidden" name="seccion" value="<?= htmlspecialchars($seccion, ENT_QUOTES, 'UTF-8') ?>"/>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h4 class="font-label-caps text-label-caps text-cyan-deep"><?= htmlspecialchars($sectionLabels[$seccion] ?? $seccion, ENT_QUOTES, 'UTF-8') ?></h4>
+        <button type="submit" class="inline-flex items-center gap-2 bg-light-cyan text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-cyan-deep transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-xl">save</span>
+          Guardar cambios
+        </button>
       </div>
-    <?php endforeach; ?>
-    <div class="flex flex-wrap gap-3 sticky bottom-24 lg:bottom-4 z-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <?php foreach ($textRows as $row): ?>
+          <?php
+            $clave = (string) $row['clave'];
+            $isLong = strlen((string) $row['valor']) > 80 || str_contains($clave, 'subtitulo') || str_contains($clave, 'bio') || str_contains($clave, 'texto') || str_contains($clave, 'horarios') || str_contains($clave, 'direccion') || str_contains($clave, 'descripcion') || str_contains($clave, 'keywords');
+            $isUrl = ($row['tipo'] ?? '') === 'url' || str_contains($clave, 'maps_') || str_contains($clave, '_url');
+          ?>
+          <div class="<?= $isLong ? 'md:col-span-2' : '' ?> space-y-2">
+            <label class="font-label-caps text-label-caps text-on-surface-variant" for="cms-<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>">
+              <?= htmlspecialchars((string) $row['etiqueta'], ENT_QUOTES, 'UTF-8') ?>
+            </label>
+            <?php if ($isLong): ?>
+              <textarea id="cms-<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>"
+                        name="cms[<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>]"
+                        rows="3"
+                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-body-md focus:border-light-cyan focus:ring-1 focus:ring-light-cyan"><?= htmlspecialchars((string) $row['valor'], ENT_QUOTES, 'UTF-8') ?></textarea>
+            <?php else: ?>
+              <input id="cms-<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>"
+                     type="<?= $isUrl ? 'url' : 'text' ?>"
+                     name="cms[<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>]"
+                     value="<?= htmlspecialchars((string) $row['valor'], ENT_QUOTES, 'UTF-8') ?>"
+                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-body-md focus:border-light-cyan focus:ring-1 focus:ring-light-cyan"/>
+            <?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
+      <div class="flex justify-end pt-1 border-t border-sage/40">
+        <button type="submit" class="inline-flex items-center gap-2 bg-light-cyan text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-cyan-deep transition-colors">
+          <span class="material-symbols-outlined text-xl">save</span>
+          Guardar <?= htmlspecialchars($sectionLabels[$seccion] ?? 'sección', ENT_QUOTES, 'UTF-8') ?>
+        </button>
+      </div>
+    </form>
+  <?php endforeach; ?>
+  <a href="index.php" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold border border-outline-variant bg-mist text-on-surface hover:border-light-cyan transition-colors">
+    <span class="material-symbols-outlined">visibility</span>
+    Ver landing
+  </a>
+</section>
+<?php endif; ?>
+
+<?php if ($tab === 'colores'): ?>
+<?php
+  $brandNow = theme_resolve_brand();
+  $previewPalette = [
+    ['key' => 'cyan', 'label' => 'Cian'],
+    ['key' => 'yellow', 'label' => 'Amarillo'],
+    ['key' => 'orange', 'label' => 'Naranja'],
+    ['key' => 'teal', 'label' => 'Teal'],
+    ['key' => 'mint', 'label' => 'Menta'],
+    ['key' => 'sage', 'label' => 'Sage'],
+    ['key' => 'mist', 'label' => 'Fondo'],
+  ];
+?>
+<section class="space-y-6">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-light-cyan/15 text-cyan-deep flex items-center justify-center"><span class="material-symbols-outlined">palette</span></span>
+      <div>
+        <h3 class="font-headline-md text-lg font-bold text-on-background">Colores del sitio</h3>
+        <p class="text-sm text-on-surface-variant">Usa la rueda de color o escribe un hex (#RRGGBB). Afecta landing y panel.</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <?php foreach ($previewPalette as $sw): ?>
+        <div class="flex flex-col items-center gap-1">
+          <span class="js-theme-swatch w-9 h-9 rounded-full border border-outline-variant shadow-sm" data-brand="<?= htmlspecialchars($sw['key'], ENT_QUOTES, 'UTF-8') ?>" style="background:<?= htmlspecialchars($brandNow[$sw['key']] ?? '#ccc', ENT_QUOTES, 'UTF-8') ?>"></span>
+          <span class="text-[10px] font-bold text-on-surface-variant"><?= htmlspecialchars($sw['label'], ENT_QUOTES, 'UTF-8') ?></span>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <form method="post" id="theme-colors-form" class="rounded-2xl border border-sage/50 bg-mist p-5 md:p-8 space-y-6">
+    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"/>
+    <input type="hidden" name="action" value="save_theme_colors"/>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+      <?php foreach (theme_editable_defs() as $brandKey => $def): ?>
+        <?php
+          $clave = $def['clave'];
+          $hex = $brandNow[$brandKey] ?? $def['valor'];
+        ?>
+        <div class="rounded-xl border border-sage/40 bg-surface-container-lowest/70 p-4 space-y-3">
+          <div>
+            <label class="font-label-caps text-label-caps text-cyan-deep" for="pick-<?= htmlspecialchars($brandKey, ENT_QUOTES, 'UTF-8') ?>">
+              <?= htmlspecialchars($def['etiqueta'], ENT_QUOTES, 'UTF-8') ?>
+            </label>
+            <p class="text-xs text-on-surface-variant mt-1"><?= htmlspecialchars($def['ayuda'], ENT_QUOTES, 'UTF-8') ?></p>
+          </div>
+          <div class="flex items-center gap-3">
+            <input
+              type="color"
+              id="pick-<?= htmlspecialchars($brandKey, ENT_QUOTES, 'UTF-8') ?>"
+              class="js-color-wheel h-14 w-16 shrink-0 cursor-pointer rounded-lg border border-outline-variant bg-transparent p-0.5"
+              value="<?= htmlspecialchars($hex, ENT_QUOTES, 'UTF-8') ?>"
+              data-brand="<?= htmlspecialchars($brandKey, ENT_QUOTES, 'UTF-8') ?>"
+              data-sync="hex-<?= htmlspecialchars($brandKey, ENT_QUOTES, 'UTF-8') ?>"
+              aria-label="Rueda de color <?= htmlspecialchars($def['etiqueta'], ENT_QUOTES, 'UTF-8') ?>"
+            />
+            <input
+              type="text"
+              id="hex-<?= htmlspecialchars($brandKey, ENT_QUOTES, 'UTF-8') ?>"
+              name="cms[<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8') ?>]"
+              value="<?= htmlspecialchars($hex, ENT_QUOTES, 'UTF-8') ?>"
+              pattern="^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$"
+              maxlength="7"
+              spellcheck="false"
+              class="js-color-hex flex-1 min-w-0 rounded-xl border border-outline-variant bg-mist px-3 py-3 font-mono text-sm uppercase focus:border-light-cyan focus:ring-1 focus:ring-light-cyan"
+              data-brand="<?= htmlspecialchars($brandKey, ENT_QUOTES, 'UTF-8') ?>"
+              data-sync="pick-<?= htmlspecialchars($brandKey, ENT_QUOTES, 'UTF-8') ?>"
+              required
+            />
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+    <div class="flex flex-wrap gap-3 pt-2 border-t border-sage/40">
       <button type="submit" class="inline-flex items-center gap-2 bg-light-cyan text-white px-6 py-3 rounded-xl font-bold hover:bg-cyan-deep transition-colors shadow-md">
         <span class="material-symbols-outlined">save</span>
-        Guardar textos
+        Guardar colores
       </button>
-      <a href="index.php" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold border border-outline-variant bg-mist text-on-surface hover:border-light-cyan transition-colors">
+      <a href="index.php" target="_blank" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold border border-outline-variant bg-surface-container-lowest text-on-surface hover:border-light-cyan transition-colors">
         <span class="material-symbols-outlined">visibility</span>
         Ver landing
       </a>
     </div>
   </form>
+
+  <form method="post" onsubmit="return confirm('¿Restaurar la paleta original de MiDoc?');" class="rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest/50 p-4 flex flex-wrap items-center justify-between gap-3">
+    <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>"/>
+    <input type="hidden" name="action" value="reset_theme_colors"/>
+    <p class="text-sm text-on-surface-variant">¿Quieres volver a los colores de fábrica?</p>
+    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm border border-outline-variant text-on-surface hover:border-brand-orange hover:text-brand-orange transition-colors">
+      <span class="material-symbols-outlined text-xl">restart_alt</span>
+      Restaurar originales
+    </button>
+  </form>
 </section>
+<script>
+(function () {
+  function normHex(v) {
+    v = String(v || '').trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(v)) return v.toUpperCase();
+    if (/^#[0-9A-Fa-f]{3}$/.test(v)) {
+      var s = v.slice(1);
+      return ('#' + s[0] + s[0] + s[1] + s[1] + s[2] + s[2]).toUpperCase();
+    }
+    return null;
+  }
+  function updateSwatch(brand, hex) {
+    document.querySelectorAll('.js-theme-swatch[data-brand="' + brand + '"]').forEach(function (el) {
+      el.style.background = hex;
+    });
+  }
+  document.querySelectorAll('.js-color-wheel').forEach(function (wheel) {
+    wheel.addEventListener('input', function () {
+      var hex = normHex(wheel.value);
+      if (!hex) return;
+      var hexInput = document.getElementById(wheel.getAttribute('data-sync'));
+      if (hexInput) hexInput.value = hex;
+      updateSwatch(wheel.getAttribute('data-brand'), hex);
+    });
+  });
+  document.querySelectorAll('.js-color-hex').forEach(function (input) {
+    input.addEventListener('change', function () {
+      var hex = normHex(input.value);
+      if (!hex) return;
+      input.value = hex;
+      var wheel = document.getElementById(input.getAttribute('data-sync'));
+      if (wheel) wheel.value = hex;
+      updateSwatch(input.getAttribute('data-brand'), hex);
+    });
+  });
+})();
+</script>
 <?php endif; ?>
 
 <?php if ($tab === 'imagenes'): ?>

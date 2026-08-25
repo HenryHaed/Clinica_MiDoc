@@ -5,6 +5,8 @@ node_modules/
 .env
 .env.*
 config/db.local.php
+config/db.hostinger.php
+config/smtp.php
 *.local.php
 notes.txt
 
@@ -33,3 +35,7 @@ Desktop.ini
 # Cursor / herramientas locales
 .cursor/
 .cursorignore
+
+# Paquete de despliegue (se regenera con pack-hostinger.sh)
+dist-hostinger/
+midoc-hostinger.zip
