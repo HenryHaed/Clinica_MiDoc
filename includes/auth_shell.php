@@ -22,48 +22,12 @@ $loginSideImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCDO8ecdki
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <meta name="theme-color" content="<?= htmlspecialchars(theme_color('mist', '#D9EEE1'), ENT_QUOTES, 'UTF-8') ?>"/>
 <title><?= htmlspecialchars($pageTitleAuth, ENT_QUOTES, 'UTF-8') ?></title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": <?= theme_colors_json() ?>,
-              "borderRadius": {
-                      "DEFAULT": "0.25rem",
-                      "lg": "0.5rem",
-                      "xl": "0.75rem",
-                      "full": "9999px"
-              },
-              "spacing": {
-                      "section-padding-desktop": "80px",
-                      "section-padding-mobile": "32px",
-                      "gutter": "24px",
-                      "container-max": "1280px",
-                      "unit": "8px"
-              },
-              "fontFamily": {
-                      "body-md": ["Inter"],
-                      "body-lg": ["Inter"],
-                      "label-caps": ["Inter"],
-                      "headline-md": ["Lexend"],
-                      "display-lg-mobile": ["Lexend"],
-                      "display-lg": ["Lexend"]
-              },
-              "fontSize": {
-                      "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
-                      "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
-                      "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700" }],
-                      "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
-                      "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
-                      "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }]
-              }
-      },
-          },
-        }
-</script>
+<link rel="stylesheet" href="assets/css/style.css"/>
+<style>
+<?= theme_css_variables_block() ?>
+</style>
 <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;

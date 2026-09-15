@@ -18,7 +18,7 @@ $pageKeywords = cms_get(
 );
 $siteName = cms_get('config.sitio_nombre', 'MiDoc');
 $canonicalUrl = seo_home_url();
-$ogImage = seo_absolute_url(cms_get('hero.imagen', brand_logo_src()));
+$ogImage = seo_absolute_url(cms_media_url('hero.imagen', brand_logo_src()));
 $pageRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
 $seoJsonLd = [
@@ -46,7 +46,7 @@ $seoJsonLd = [
                 '@type' => 'Physician',
                 'name' => cms_get('especialista.nombre', 'Dr. Hernán Caihuara Salas'),
                 'jobTitle' => cms_get('especialista.rol', 'Cirujano General Adultos y Cirujano Pediatra'),
-                'image' => seo_absolute_url(cms_get('especialista.foto', brand_logo_src())),
+                'image' => seo_absolute_url(cms_media_url('especialista.foto', brand_logo_src())),
             ],
         ],
         [
@@ -65,10 +65,10 @@ $basePath = '';
 $phone = cms_get('config.telefono', '70688374');
 $whatsappNumber = cms_get('config.whatsapp', '59170688374');
 $whatsappGeneralUrl = whatsapp_chat_url($whatsappNumber, whatsapp_cita_mensaje_general());
-$doctorPhoto = cms_get('especialista.foto');
-$heroBgImage = cms_get('hero.fondo');
-$heroSideImage = cms_get('hero.imagen');
-$mapImage = cms_get('ubicacion.mapa_imagen');
+$doctorPhoto = cms_media_url('especialista.foto');
+$heroBgImage = cms_media_url('hero.fondo');
+$heroSideImage = cms_media_url('hero.imagen');
+$mapImage = cms_media_url('ubicacion.mapa_imagen');
 $mapsUrl = cms_get('ubicacion.maps_url', 'https://maps.app.goo.gl/SeunT1EjTJ2AG4Nn9');
 $mapsEmbed = cms_maps_embed(
     'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1700.9216896407104!2d-65.7663181!3d-19.5776747!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93f94dc889649eaf%3A0x6e961c40ac838987!2sClinica%20Saint%20Jude!5e1!3m2!1ses!2sbo!4v1787687019456!5m2!1ses!2sbo'
@@ -228,6 +228,13 @@ foreach ($serviciosBloques as $bloqueIndex => $bloque):
     $detalle = trim((string) ($svc['detalle'] ?? ''));
     $icono = trim((string) ($svc['icono'] ?? 'medical_services')) ?: 'medical_services';
     $imagen = trim((string) ($svc['imagen_url'] ?? ''));
+    if ($imagen !== '' && !preg_match('#^https?://#i', $imagen)) {
+        $relImg = ltrim(str_replace('\\', '/', $imagen), '/');
+        $fullImg = __DIR__ . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relImg);
+        if (!is_file($fullImg)) {
+            $imagen = '';
+        }
+    }
     $modalBody = $detalle !== '' ? $detalle : $desc;
 ?>
 <button type="button"

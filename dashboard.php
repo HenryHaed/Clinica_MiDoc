@@ -260,7 +260,7 @@ $quickLinks[] = [
     'blank' => true,
 ];
 
-$headerTitle = $copy['welcome'];
+$headerTitle = 'Inicio';
 $pageTitleAdmin = 'MiDoc - ' . $copy['welcome'];
 $roleSubtitle = $copy['subtitle'];
 require __DIR__ . '/includes/admin_chrome_start.php';
@@ -270,35 +270,35 @@ $hoy = (new DateTimeImmutable('now'))->format('d/m/Y');
 ?>
 
 <!-- Bienvenida -->
-<section class="rounded-2xl border border-sage/50 bg-mist overflow-hidden">
-  <div class="grid lg:grid-cols-12 gap-0">
-    <div class="lg:col-span-8 p-5 sm:p-6 lg:p-8">
+<section class="rounded-2xl border border-sage/50 bg-mist w-full max-w-full min-w-0">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-0">
+    <div class="lg:col-span-8 p-4 sm:p-6 lg:p-8 min-w-0">
       <p class="font-label-caps text-label-caps text-on-surface-variant mb-2 tracking-wider">SESIÓN · <?= htmlspecialchars($hoy, ENT_QUOTES, 'UTF-8') ?></p>
-      <h3 class="font-headline-md text-2xl lg:text-3xl font-bold text-on-background mb-2">
+      <h3 class="font-headline-md text-xl sm:text-2xl lg:text-3xl font-bold text-on-background mb-2 admin-break">
         Hola, <?= htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8') ?>
       </h3>
-      <p class="font-body-md text-on-surface-variant max-w-2xl leading-relaxed"><?= htmlspecialchars($copy['focus'], ENT_QUOTES, 'UTF-8') ?></p>
-      <div class="flex flex-wrap gap-2 mt-5">
+      <p class="font-body-md text-sm sm:text-base text-on-surface-variant leading-relaxed admin-break"><?= htmlspecialchars($copy['focus'], ENT_QUOTES, 'UTF-8') ?></p>
+      <div class="flex flex-col xs:flex-row flex-wrap gap-2 mt-5">
         <?php if ($canAjustes): ?>
-          <a href="ajustes.php" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-light-cyan text-white font-bold text-sm hover:bg-cyan-deep transition-colors">
+          <a href="ajustes.php" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-light-cyan text-white font-bold text-sm hover:bg-cyan-deep transition-colors">
             <span class="material-symbols-outlined text-xl">settings</span>
             Ajustes del sistema
           </a>
         <?php endif; ?>
-        <a href="index.php" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest font-bold text-sm text-on-surface hover:border-light-cyan transition-colors">
+        <a href="index.php" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest font-bold text-sm text-on-surface hover:border-light-cyan transition-colors">
           <span class="material-symbols-outlined text-xl">open_in_new</span>
           Ver landing
         </a>
       </div>
     </div>
-    <div class="lg:col-span-4 border-t lg:border-t-0 lg:border-l border-sage/50 bg-surface-container-low/60 p-5 sm:p-6 lg:p-8 flex flex-col justify-center gap-3">
+    <div class="lg:col-span-4 border-t lg:border-t-0 lg:border-l border-sage/50 bg-surface-container-low/60 p-4 sm:p-6 lg:p-8 flex flex-col justify-center gap-3 min-w-0">
       <div class="flex items-center gap-3 min-w-0">
         <div class="w-12 h-12 rounded-full bg-light-cyan/20 text-cyan-deep flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-2xl">account_circle</span>
         </div>
-        <div class="min-w-0">
-          <p class="font-bold text-on-background truncate"><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></p>
-          <p class="text-sm text-on-surface-variant truncate"><?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?></p>
+        <div class="min-w-0 flex-1">
+          <p class="font-bold text-on-background admin-break"><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></p>
+          <p class="text-sm text-on-surface-variant admin-break"><?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?></p>
         </div>
       </div>
       <div class="flex flex-wrap gap-2">

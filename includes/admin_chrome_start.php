@@ -137,65 +137,41 @@ if (!function_exists('admin_item_active')) {
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <meta name="theme-color" content="<?= htmlspecialchars(theme_color('mist', '#D9EEE1'), ENT_QUOTES, 'UTF-8') ?>"/>
 <title><?= htmlspecialchars($pageTitleAdmin, ENT_QUOTES, 'UTF-8') ?></title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lexend:wght@500;600&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": <?= theme_colors_json() ?>,
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "section-padding-desktop": "80px",
-                        "section-padding-mobile": "32px",
-                        "gutter": "24px",
-                        "container-max": "1280px",
-                        "unit": "8px"
-                    },
-                    "fontFamily": {
-                        "body-md": ["Inter"],
-                        "body-lg": ["Inter"],
-                        "label-caps": ["Inter"],
-                        "headline-md": ["Lexend"],
-                        "display-lg-mobile": ["Lexend"],
-                        "display-lg": ["Lexend"]
-                    },
-                    "fontSize": {
-                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
-                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
-                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700" }],
-                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
-                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
-                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }]
-                    }
-                }
-            }
-        }
-</script>
+<link rel="stylesheet" href="assets/css/style.css"/>
 <style>
+<?= theme_css_variables_block() ?>
+</style>
+<style>
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   .admin-bottom-nav { padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px)); }
   .admin-bottom-nav a.is-active { color: <?= htmlspecialchars(theme_color('cyan', '#003E67'), ENT_QUOTES, 'UTF-8') ?>; }
   .admin-bottom-nav a.is-active .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 500; }
   .admin-shell-main {
     width: 100%;
-    max-width: 1120px;
+    max-width: 100%;
     margin-left: auto;
     margin-right: auto;
+    min-width: 0;
+  }
+  @media (min-width: 1024px) {
+    .admin-shell-main { max-width: 1120px; }
   }
   @media (min-width: 1536px) {
     .admin-shell-main { max-width: 1280px; }
   }
+  .admin-break {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 </style>
 </head>
-<body class="bg-background text-on-background font-body-md min-h-screen flex antialiased overflow-x-hidden">
-<aside class="hidden lg:flex w-64 xl:w-72 shrink-0 h-full flex-col border-r border-sage/50 fixed left-0 top-0 bottom-0 z-40 bg-mist">
+<body class="bg-background text-on-background font-body-md min-h-screen antialiased overflow-x-hidden w-full max-w-full">
+<aside class="hidden lg:flex w-64 xl:w-72 flex-col border-r border-sage/50 fixed left-0 top-0 bottom-0 z-40 bg-mist">
 <div class="px-5 py-5 border-b border-sage/50">
   <div class="mb-1"><?= brand_mark('MiDoc Admin', 'h-9 w-9 rounded-md object-cover shrink-0', 'font-headline-md text-lg xl:text-xl font-bold text-primary') ?></div>
   <p class="text-on-surface-variant font-label-caps text-label-caps mt-2 leading-relaxed"><?= htmlspecialchars($roleSubtitle, ENT_QUOTES, 'UTF-8') ?></p>
@@ -231,9 +207,9 @@ if (!function_exists('admin_item_active')) {
 </div>
 </aside>
 
-<div class="flex-1 w-full lg:ml-64 xl:ml-72 flex flex-col min-h-screen min-w-0">
-<header class="flex justify-between items-center w-full px-4 sm:px-6 xl:px-8 py-3 h-14 lg:h-16 border-b border-sage/40 bg-mist/95 backdrop-blur-md fixed top-0 left-0 right-0 lg:left-64 xl:left-72 z-30">
-<div class="flex items-center gap-3 min-w-0">
+<div class="w-full max-w-full min-w-0 lg:pl-64 xl:pl-72">
+<header class="flex justify-between items-center gap-2 w-full max-w-full px-4 sm:px-6 xl:px-8 py-3 h-14 lg:h-16 border-b border-sage/40 bg-mist/95 backdrop-blur-md sticky top-0 z-30">
+<div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
   <img src="<?= htmlspecialchars(brand_logo_src(), ENT_QUOTES, 'UTF-8') ?>" alt="MiDoc" class="lg:hidden h-8 w-8 rounded-md object-cover shrink-0"/>
   <h2 class="font-headline-md text-base sm:text-lg xl:text-xl font-bold text-primary truncate"><?= htmlspecialchars($headerTitle ?? 'Panel', ENT_QUOTES, 'UTF-8') ?></h2>
 </div>
@@ -248,5 +224,5 @@ if (!function_exists('admin_item_active')) {
   </a>
 </div>
 </header>
-<main class="flex-1 mt-14 lg:mt-16 px-4 sm:px-6 xl:px-8 py-5 sm:py-6 lg:py-8 pb-28 lg:pb-10 min-w-0">
+<main class="w-full max-w-full min-w-0 px-4 sm:px-6 xl:px-8 py-5 sm:py-6 lg:py-8 pb-28 lg:pb-10">
 <div class="admin-shell-main space-y-5 lg:space-y-6">

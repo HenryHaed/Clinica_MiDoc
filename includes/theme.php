@@ -248,6 +248,25 @@ function theme_colors_json(): string
     return is_string($json) ? $json : '{}';
 }
 
+/**
+ * Bloque :root con variables RGB para Tailwind compilado (producción).
+ */
+function theme_css_variables_block(): string
+{
+    $lines = [':root {'];
+    foreach (theme_colors() as $key => $hex) {
+        $norm = theme_normalize_hex($hex) ?? '#000000';
+        $r = hexdec(substr($norm, 1, 2));
+        $g = hexdec(substr($norm, 3, 2));
+        $b = hexdec(substr($norm, 5, 2));
+        $safeKey = preg_replace('/[^a-z0-9\-]/i', '', $key) ?: 'x';
+        $lines[] = '  --color-' . $safeKey . ': ' . $norm . ';';
+        $lines[] = '  --rgb-' . $safeKey . ': ' . $r . ' ' . $g . ' ' . $b . ';';
+    }
+    $lines[] = '}';
+    return implode("\n", $lines);
+}
+
 function theme_color(string $key, string $fallback = '#000000'): string
 {
     $colors = theme_colors();

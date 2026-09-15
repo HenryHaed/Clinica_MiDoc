@@ -283,6 +283,32 @@ function cms_get(string $clave, ?string $fallback = null): string
     return cms_default_defs()[$clave]['valor'] ?? '';
 }
 
+/**
+ * URL de imagen CMS: si el archivo local no existe (404 tras wipe), usa el default.
+ */
+function cms_media_url(string $clave, ?string $fallback = null): string
+{
+    $url = trim(cms_get($clave, $fallback));
+    $default = cms_default_defs()[$clave]['valor'] ?? ($fallback ?? '');
+
+    if ($url === '') {
+        return $default;
+    }
+
+    // Remotas (CDN / Google) OK
+    if (preg_match('#^https?://#i', $url) || str_starts_with($url, '//')) {
+        return $url;
+    }
+
+    $rel = ltrim(str_replace('\\', '/', $url), '/');
+    $full = dirname(__DIR__) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $rel);
+    if (is_file($full)) {
+        return $url;
+    }
+
+    return $default;
+}
+
 function cms_set(string $clave, string $valor, ?int $userId = null): void
 {
     if ($clave === 'ubicacion.maps_embed') {

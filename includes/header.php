@@ -55,35 +55,12 @@ $faviconUrl = seo_absolute_url(brand_logo_src());
   <script type="application/ld+json"><?= json_encode($seoJsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
   <?php endif; ?>
 
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: <?= theme_colors_json() ?>,
-          borderRadius: {
-            "DEFAULT": "0.5rem",
-            "lg": "0.75rem",
-            "xl": "1rem",
-            "full": "9999px"
-          },
-          fontFamily: {
-            "headline-lg": ["Lexend"],
-            "display-lg-mobile": ["Lexend"],
-            "body-md": ["Inter"],
-            "label-md": ["Inter"],
-            "label-sm": ["Inter"],
-            "headline-md": ["Lexend"],
-            "display-lg": ["Lexend"],
-            "body-lg": ["Inter"]
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="stylesheet" href="<?= htmlspecialchars(($basePath !== '' ? rtrim($basePath, '/') . '/' : '') . 'assets/css/style.css', ENT_QUOTES, 'UTF-8') ?>"/>
+  <style>
+<?= theme_css_variables_block() ?>
+  </style>
   <style>
     /* Solo ocultar reveals cuando main.js añadió .js (si el script falla, todo se ve) */
     .js .reveal {

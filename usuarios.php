@@ -35,6 +35,7 @@ usuarios_ensure_profile_columns();
 
 $navActive = 'usuarios';
 $pageTitleAdmin = 'Usuarios — MiDoc Admin';
+$headerTitle = 'Usuarios';
 $roleSubtitle = auth_has_role('super_admin')
     ? 'Gestión de cuentas y contraseñas'
     : 'Edición de cuentas operativas';

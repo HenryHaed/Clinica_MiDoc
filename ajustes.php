@@ -337,7 +337,7 @@ $sectionLabels = [
 ];
 
 $navActive = 'ajustes';
-$headerTitle = 'Ajustes del sistema';
+$headerTitle = 'Ajustes';
 $pageTitleAdmin = 'MiDoc - Ajustes del sistema';
 require __DIR__ . '/includes/admin_chrome_start.php';
 ?>
