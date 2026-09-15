@@ -29,3 +29,10 @@ function seo_absolute_url(string $path = ''): string
     }
     return $base . '/' . ltrim($path, '/');
 }
+
+/** URL canónica de la home (sin index.php). */
+function seo_home_url(): string
+{
+    return rtrim(seo_base_url(), '/') . '/';
+}
+

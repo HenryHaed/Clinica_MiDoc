@@ -5,16 +5,17 @@
 require_once __DIR__ . '/theme.php';
 require_once __DIR__ . '/seo.php';
 
-$pageTitle = $pageTitle ?? 'MiDoc - Cirugía General y Pediátrica | Dr. Hernán Caihuara';
-$pageDescription = $pageDescription ?? 'Clínica MiDoc. Dr. Hernán Caihuara Salas, Cirujano General Adultos y Cirujano Pediatra en Clínica Saint Jude. Agenda tu cita.';
-$pageKeywords = $pageKeywords ?? 'MiDoc, cirugía general, cirugía pediátrica, Dr Hernán Caihuara, Clínica Saint Jude, cirujano, laparoscópica';
-$pageRobots = $pageRobots ?? 'index, follow, max-image-preview:large';
-$canonicalUrl = $canonicalUrl ?? seo_absolute_url('index.php');
+$pageTitle = $pageTitle ?? 'MiDoc | Cirugía General y Pediátrica — Dr. Hernán Caihuara';
+$pageDescription = $pageDescription ?? 'Clínica MiDoc en Saint Jude. Dr. Hernán Caihuara Salas: cirugía general, pediátrica y laparoscópica. Atención profesional. Agenda tu cita al 70688374.';
+$pageKeywords = $pageKeywords ?? 'MiDoc, cirugía general, cirugía pediátrica, Dr Hernán Caihuara, Clínica Saint Jude, cirujano Bolivia, laparoscópica';
+$pageRobots = $pageRobots ?? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+$canonicalUrl = $canonicalUrl ?? seo_home_url();
 $ogImage = $ogImage ?? seo_absolute_url(brand_logo_src());
 $ogType = $ogType ?? 'website';
 $siteName = $siteName ?? 'MiDoc';
 $seoJsonLd = $seoJsonLd ?? null;
 $basePath = $basePath ?? '';
+$faviconUrl = seo_absolute_url(brand_logo_src());
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -37,21 +38,25 @@ $basePath = $basePath ?? '';
   <meta property="og:description" content="<?= htmlspecialchars($pageDescription, ENT_QUOTES, 'UTF-8') ?>"/>
   <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8') ?>"/>
   <meta property="og:image" content="<?= htmlspecialchars($ogImage, ENT_QUOTES, 'UTF-8') ?>"/>
+  <meta property="og:image:alt" content="<?= htmlspecialchars($siteName . ' — Dr. Hernán Caihuara Salas', ENT_QUOTES, 'UTF-8') ?>"/>
 
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>"/>
   <meta name="twitter:description" content="<?= htmlspecialchars($pageDescription, ENT_QUOTES, 'UTF-8') ?>"/>
   <meta name="twitter:image" content="<?= htmlspecialchars($ogImage, ENT_QUOTES, 'UTF-8') ?>"/>
 
-  <link rel="icon" href="<?= htmlspecialchars(seo_absolute_url(brand_logo_src()), ENT_QUOTES, 'UTF-8') ?>" type="image/png"/>
-  <link rel="apple-touch-icon" href="<?= htmlspecialchars(seo_absolute_url(brand_logo_src()), ENT_QUOTES, 'UTF-8') ?>"/>
+  <link rel="icon" href="/favicon.ico" sizes="any"/>
+  <link rel="icon" href="<?= htmlspecialchars($faviconUrl, ENT_QUOTES, 'UTF-8') ?>" type="image/png" sizes="32x32"/>
+  <link rel="icon" href="<?= htmlspecialchars($faviconUrl, ENT_QUOTES, 'UTF-8') ?>" type="image/png" sizes="192x192"/>
+  <link rel="apple-touch-icon" href="<?= htmlspecialchars($faviconUrl, ENT_QUOTES, 'UTF-8') ?>"/>
+  <link rel="shortcut icon" href="<?= htmlspecialchars($faviconUrl, ENT_QUOTES, 'UTF-8') ?>"/>
 
   <?php if (is_array($seoJsonLd) && $seoJsonLd !== []): ?>
   <script type="application/ld+json"><?= json_encode($seoJsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
   <?php endif; ?>
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <script id="tailwind-config">
     tailwind.config = {
@@ -146,7 +151,21 @@ $basePath = $basePath ?? '';
     .ubicacion-modal.is-open {
       display: flex !important;
     }
-    body.ubicacion-modal-open {
+    .video-modal[hidden] {
+      display: none !important;
+    }
+    .video-modal.is-open {
+      display: flex !important;
+    }
+    .servicio-modal[hidden] {
+      display: none !important;
+    }
+    .servicio-modal.is-open {
+      display: flex !important;
+    }
+    body.ubicacion-modal-open,
+    body.video-modal-open,
+    body.servicio-modal-open {
       overflow: hidden;
     }
     @media (max-width: 767px) {

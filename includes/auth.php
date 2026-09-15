@@ -83,7 +83,7 @@ function auth_can(string $capability): bool
 {
     $map = [
         'super_admin' => ['dashboard', 'citas', 'pacientes', 'personal', 'cms', 'usuarios', 'config', 'reportes', 'clinico'],
-        'admin' => ['dashboard', 'citas', 'pacientes', 'cms', 'config', 'reportes'],
+        'admin' => ['dashboard', 'citas', 'pacientes', 'cms', 'config', 'reportes', 'usuarios'],
         'doctor' => ['dashboard', 'citas', 'pacientes', 'clinico'],
         'enfermero' => ['dashboard', 'citas', 'pacientes', 'clinico'],
         'recepcion' => ['dashboard', 'citas', 'pacientes'],
@@ -149,16 +149,30 @@ function auth_attempt(string $email, string $password): array
         return ['ok' => false, 'message' => 'No hay conexión a la base de datos. Verifica MySQL / phpMyAdmin.'];
     }
 
-    $sql = 'SELECT u.id, u.email, u.password_hash, u.nombre, u.activo, u.deleted_at,
+    $sql = 'SELECT u.id, u.email, u.password_hash, u.nombre, u.apellido_paterno, u.apellido_materno,
+                   u.activo, u.deleted_at,
                    u.rol_id, r.slug AS rol_slug, r.nombre AS rol_nombre, r.activo AS rol_activo
             FROM usuarios u
             INNER JOIN roles r ON r.id = u.rol_id
             WHERE u.email = :email
             LIMIT 1';
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['email' => $email]);
-    $row = $stmt->fetch();
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['email' => $email]);
+        $row = $stmt->fetch();
+    } catch (Throwable $e) {
+        // BD sin columnas de perfil aún
+        $sql = 'SELECT u.id, u.email, u.password_hash, u.nombre, u.activo, u.deleted_at,
+                       u.rol_id, r.slug AS rol_slug, r.nombre AS rol_nombre, r.activo AS rol_activo
+                FROM usuarios u
+                INNER JOIN roles r ON r.id = u.rol_id
+                WHERE u.email = :email
+                LIMIT 1';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['email' => $email]);
+        $row = $stmt->fetch();
+    }
 
     // Comparación constante aunque no exista el usuario
     $hash = is_array($row) ? (string) $row['password_hash'] : '$2y$10$usesomesillystringforexactly22';
@@ -193,10 +207,16 @@ function auth_attempt(string $email, string $password): array
     session_regenerate_id(true);
     unset($_SESSION['_login_fails'], $_SESSION['_login_lock']);
 
+    $displayName = trim(implode(' ', array_filter([
+        (string) $row['nombre'],
+        trim((string) ($row['apellido_paterno'] ?? '')),
+        trim((string) ($row['apellido_materno'] ?? '')),
+    ], static fn (string $p): bool => $p !== '')));
+
     $_SESSION['auth'] = [
         'id' => (int) $row['id'],
         'email' => (string) $row['email'],
-        'nombre' => (string) $row['nombre'],
+        'nombre' => $displayName !== '' ? $displayName : (string) $row['nombre'],
         'rol_id' => (int) $row['rol_id'],
         'rol_slug' => (string) $row['rol_slug'],
         'rol_nombre' => (string) $row['rol_nombre'],

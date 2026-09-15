@@ -65,6 +65,9 @@ CREATE TABLE usuarios (
   email VARCHAR(190) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   nombre VARCHAR(120) NOT NULL,
+  apellido_paterno VARCHAR(80) NULL,
+  apellido_materno VARCHAR(80) NULL,
+  datos_extras TEXT NULL,
   activo TINYINT(1) NOT NULL DEFAULT 1,
   last_login_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -118,8 +121,10 @@ CREATE TABLE servicios (
   slug VARCHAR(80) NOT NULL,
   titulo VARCHAR(150) NOT NULL,
   descripcion TEXT NOT NULL,
+  detalle TEXT NULL,
   icono VARCHAR(80) NULL,
   imagen_url VARCHAR(500) NULL,
+  categoria VARCHAR(40) NOT NULL DEFAULT 'adultos',
   orden INT NOT NULL DEFAULT 0,
   activo TINYINT(1) NOT NULL DEFAULT 1,
   destacado TINYINT(1) NOT NULL DEFAULT 0,
@@ -129,6 +134,7 @@ CREATE TABLE servicios (
   PRIMARY KEY (id),
   UNIQUE KEY uq_servicios_slug (slug),
   KEY idx_servicios_activo_orden (activo, orden),
+  KEY idx_servicios_categoria (categoria),
   KEY idx_servicios_deleted (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -349,6 +355,23 @@ CREATE TABLE cms_contenidos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------------------------------
+-- landing_videos: videos YouTube publicables desde Ajustes
+-- -----------------------------------------------------------------------------
+CREATE TABLE landing_videos (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  titulo VARCHAR(180) NOT NULL,
+  descripcion TEXT NULL,
+  youtube_url VARCHAR(500) NOT NULL,
+  youtube_id VARCHAR(20) NOT NULL,
+  orden INT NOT NULL DEFAULT 0,
+  activo TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_landing_videos_activo_orden (activo, orden, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------------------------------
 -- visitas: pageviews para el dashboard
 -- -----------------------------------------------------------------------------
 CREATE TABLE visitas (
@@ -444,28 +467,25 @@ INSERT INTO especialidades (id, slug, nombre, descripcion) VALUES
 (3, 'cirugia-laparoscopica', 'Cirugía Laparoscópica', 'Técnicas mínimamente invasivas'),
 (4, 'cirugia-toracica', 'Cirugía Torácica', 'Afecciones del tórax');
 
--- Servicios (landing + formulario)
-INSERT INTO servicios (slug, titulo, descripcion, icono, imagen_url, orden, activo, destacado) VALUES
-('apendicitis', 'Apendicitis',
- 'Intervención quirúrgica oportuna y segura para el tratamiento de la apendicitis aguda.',
- 'medical_services', NULL, 1, 1, 0),
-('colecistitis', 'Colecistitis',
- 'Tratamiento especializado para problemas de la vesícula biliar mediante técnicas modernas.',
- 'healing', NULL, 2, 1, 0),
-('hernias', 'Hernias',
- 'Reparación quirúrgica de hernias abdominales e inguinales para restaurar su calidad de vida.',
- 'accessibility_new', NULL, 3, 1, 0),
-('laparoscopica', 'Cirugía Laparoscópica',
- 'Técnicas mínimamente invasivas que reducen el dolor postoperatorio, acortan el tiempo de recuperación y dejan cicatrices más pequeñas.',
- 'biotech',
- 'https://lh3.googleusercontent.com/aida/AP1WRLsv8K-AAmcJ5r8o_2JQk67pdxZ8ONKRtTue1Qp_a5ribEzRz51WIMeoZ0YPdBdRuD6APvL7wJJuzy7JW2icImOk5E1VVVbLnkkm6zb-9XSlpznt4KGmqvo_3989YyuSn4UCSE8aqJVW3qfecvQZz2Pkz4FlxkSgHnuPwACAKap2IFNe8aCBKaGOhSnAwBOrFcmHPSwo12Z0bZiouQonqRzgm6yFifaJOttdtZALerVAfh-jHsKZrb9gF90',
- 4, 1, 1),
-('toracica', 'Cirugía Torácica',
- 'Procedimientos especializados para afecciones del tórax, garantizando atención experta y cuidado integral.',
- 'pulmonology', NULL, 5, 1, 0),
-('otro', 'Consulta General / Otro',
- 'Consulta general u otro motivo no listado en el catálogo.',
- 'stethoscope', NULL, 99, 1, 0);
+-- Servicios (landing + formulario) — Adultos y Pediátrica
+INSERT INTO servicios (slug, titulo, descripcion, icono, imagen_url, categoria, orden, activo, destacado) VALUES
+('adulto-apendicitis', 'Apendicitis', 'Tratamiento quirúrgico de la apendicitis aguda en adultos.', 'gastroenterology', NULL, 'adultos', 10, 1, 0),
+('adulto-colecistitis-litiasica', 'Colecistitis litiásica', 'Cirugía de vesícula por colecistitis litiásica.', 'gastroenterology', NULL, 'adultos', 20, 1, 0),
+('adulto-hernias', 'Hernias', 'Reparación de hernias abdominales e inguinales en adultos.', 'personal_injury', NULL, 'adultos', 30, 1, 0),
+('adulto-trauma-toracico', 'Trauma torácico', 'Atención quirúrgica de traumatismos del tórax.', 'pulmonology', NULL, 'adultos', 40, 1, 0),
+('adulto-trauma-abdominal', 'Trauma abdominal', 'Manejo quirúrgico del trauma abdominal.', 'emergency', NULL, 'adultos', 50, 1, 0),
+('adulto-cirugia-laparoscopica', 'Cirugía laparoscópica', 'Procedimientos mínimamente invasivos en adultos.', 'surgical', NULL, 'adultos', 60, 1, 0),
+('adulto-ecografia-abdominal', 'Ecografía abdominal', 'Evaluación diagnóstica por ecografía abdominal.', 'radiology', NULL, 'adultos', 70, 1, 0),
+('adulto-endoscopia-digestiva', 'Endoscopia digestiva', 'Estudios y procedimientos de endoscopia digestiva.', 'gastroenterology', NULL, 'adultos', 80, 1, 0),
+('pediatrico-apendicitis', 'Apendicitis', 'Cirugía de apendicitis en pacientes pediátricos.', 'gastroenterology', NULL, 'pediatrica', 110, 1, 0),
+('pediatrico-colecistitis-litiasica', 'Colecistitis litiásica', 'Manejo quirúrgico de colecistitis litiásica en niños.', 'gastroenterology', NULL, 'pediatrica', 120, 1, 0),
+('pediatrico-hernias-labio-leporino', 'Hernias, labio leporino', 'Reparación de hernias y labio leporino en pediatría.', 'face', NULL, 'pediatrica', 130, 1, 0),
+('pediatrico-criptorquidia-fimosis', 'Criptorquidia, fimosis', 'Cirugía pediátrica de criptorquidia y fimosis.', 'urology', NULL, 'pediatrica', 140, 1, 0),
+('pediatrico-trauma-abdominal', 'Trauma abdominal', 'Atención del trauma abdominal en niños.', 'emergency', NULL, 'pediatrica', 150, 1, 0),
+('pediatrico-cirugia-laparoscopica', 'Cirugía laparoscópica', 'Cirugía laparoscópica pediátrica.', 'surgical', NULL, 'pediatrica', 160, 1, 0),
+('pediatrico-cirugia-neonatal', 'Cirugía neonatal', 'Procedimientos quirúrgicos en neonatos.', 'crib', NULL, 'pediatrica', 170, 1, 0),
+('pediatrico-malformaciones', 'Malformaciones', 'Corrección quirúrgica de malformaciones congénitas.', 'genetics', NULL, 'pediatrica', 180, 1, 0),
+('otro', 'Consulta General / Otro', 'Consulta general u otro motivo no listado en el catálogo.', 'stethoscope', NULL, 'adultos', 999, 1, 0);
 
 -- Personal: Dr. Hernán vinculado al usuario doctor
 INSERT INTO personal (
@@ -482,14 +502,15 @@ INSERT INTO personal (
 -- CMS / landing + config del sitio
 INSERT INTO cms_contenidos (seccion, clave, tipo, valor, etiqueta, updated_by) VALUES
 ('config', 'config.sitio_nombre', 'texto', 'MiDoc', 'Nombre del sitio', 1),
-('config', 'config.telefono', 'texto', '70688374', 'Teléfono principal', 1),
-('config', 'config.email', 'texto', 'info@clinicamidoc.com', 'Email de contacto', 1),
-('seo', 'seo.titulo', 'texto', 'MiDoc - Cirugía General y Pediátrica | Dr. Hernán Caihuara', 'Título SEO (Google)', 1),
+('config', 'config.telefono', 'texto', '70688374', 'Teléfono visible (landing)', 1),
+('config', 'config.whatsapp', 'texto', '59170688374', 'WhatsApp citas (código país + número)', 1),
+('config', 'config.email', 'texto', 'midochernandigital@gmail.com', 'Email de contacto (footer / mailto)', 1),
+('seo', 'seo.titulo', 'texto', 'MiDoc | Cirugía General y Pediátrica — Dr. Hernán Caihuara', 'Título SEO (Google)', 1),
 ('seo', 'seo.descripcion', 'texto',
- 'Clínica MiDoc. Dr. Hernán Caihuara Salas, Cirujano General Adultos y Cirujano Pediatra en Clínica Saint Jude. Agenda tu cita.',
+ 'Clínica MiDoc en Saint Jude. Dr. Hernán Caihuara Salas: cirugía general, pediátrica y laparoscópica. Atención profesional. Agenda tu cita al 70688374.',
  'Descripción SEO (Google)', 1),
 ('seo', 'seo.keywords', 'texto',
- 'MiDoc, cirugía general, cirugía pediátrica, Dr Hernán Caihuara, Clínica Saint Jude, cirujano, laparoscópica',
+ 'MiDoc, cirugía general, cirugía pediátrica, Dr Hernán Caihuara, Clínica Saint Jude, cirujano Bolivia, laparoscópica, hernia, apendicitis',
  'Palabras clave SEO', 1),
 ('hero', 'hero.badge', 'texto', 'Tu Salud es Primordial', 'Badge del hero', 1),
 ('hero', 'hero.titulo', 'texto', 'Atención médica de excelencia para ti y tu familia.', 'Título principal', 1),
@@ -512,10 +533,12 @@ INSERT INTO cms_contenidos (seccion, clave, tipo, valor, etiqueta, updated_by) V
 ('especialista', 'especialista.foto', 'imagen',
  'https://lh3.googleusercontent.com/aida-public/AB6AXuDQ00TRNKSzW1IeH4fiOrmtUbcjbLCCGlPgfqZ_8yz3xGbzOPR_3PFPiqDHUnlcw0lT1aJHtm2aOeaVqnqMcuUWt6WGqWTzHUGEwXo9ANOEvrPZgJanwn-8iM8q_Ih2OaqvFbJXuZJg5nddpYjfMt3yjTMtfW6cyXJE4JCT9doBg-hvy-7UaDLCoPM9oQ2yg-shU3Ipn7V23KOOA03yR8lzdSodgbpiOWyvvV5CC5b0p4DwZ73pzDmB',
  'Foto del doctor', 1),
-('servicios', 'servicios.titulo', 'texto', 'Cirugía General', 'Título sección servicios', 1),
+('servicios', 'servicios.titulo', 'texto', 'Atención en Cirugía General Adultos y Niños', 'Título sección servicios', 1),
 ('servicios', 'servicios.subtitulo', 'texto',
- 'Procedimientos quirúrgicos especializados con enfoque en la rápida recuperación y el bienestar integral del paciente.',
+ 'Procedimientos que ofrece el Dr. Hernán Caihuara Salas en Cirugía General Adultos y Cirugía Pediátrica.',
  'Subtítulo servicios', 1),
+('servicios', 'servicios.titulo_adultos', 'texto', 'Cirugía General Adultos', 'Título bloque adultos', 1),
+('servicios', 'servicios.titulo_pediatrica', 'texto', 'Cirugía Pediátrica', 'Título bloque pediátrica', 1),
 ('contacto', 'contacto.titulo', 'texto', 'Agenda tu Cita Médica', 'Título formulario', 1),
 ('contacto', 'contacto.subtitulo', 'texto',
  'Déjanos tus datos y nos pondremos en contacto contigo a la brevedad para confirmar tu horario de atención.',
@@ -528,8 +551,8 @@ INSERT INTO cms_contenidos (seccion, clave, tipo, valor, etiqueta, updated_by) V
  'https://maps.app.goo.gl/SeunT1EjTJ2AG4Nn9',
  'Link Google Maps (abrir en app/web)', 1),
 ('ubicacion', 'ubicacion.maps_embed', 'url',
- 'https://www.google.com/maps?q=Plaza+El+Radialista+102,+Zona+San+Clemente&output=embed',
- 'URL embed del mapa (iframe)', 1),
+ 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1700.9216896407104!2d-65.7663181!3d-19.5776747!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93f94dc889649eaf%3A0x6e961c40ac838987!2sClinica%20Saint%20Jude!5e1!3m2!1ses!2sbo!4v1787687019456!5m2!1ses!2sbo',
+ 'Mapa embed (URL o pegar el iframe de Google Maps)', 1),
 ('ubicacion', 'ubicacion.mapa_imagen', 'imagen',
  'https://lh3.googleusercontent.com/aida-public/AB6AXuBg1ToGGMqGq3xdnCJhsXVMxOceBu_gwvZ84s5Tc04DinwW6azM-guuPPDFTkypubfv_YhfHHEfYwMbLy7RKa1Rx5uqFi6LR4wFAociBNow7DarvnWo9v5QjNXNMtNUNCMDVCg5ij69JJErG1-fWNti4UQSxqJDQ_EDmfkHMSVlPwz_6ARp7UQofCMZoD8q-SuHYhGsJJs9nk1-vxK2sAZLlBApRn2meaBy7Px02nxWvnqr5EP3GCl7',
  'Imagen de fondo (sección mapa)', 1),
@@ -538,6 +561,15 @@ INSERT INTO cms_contenidos (seccion, clave, tipo, valor, etiqueta, updated_by) V
 ('footer', 'footer.texto', 'texto',
  'Atención médica de excelencia por el Dr. Hernán Caihuara Salas, brindando cuidado experto y compasivo para toda la familia.',
  'Texto del footer', 1),
+('redes', 'redes.titulo', 'texto', 'Síguenos en nuestras redes sociales', 'Título sección redes', 1),
+('redes', 'redes.subtitulo', 'texto', 'Contenido, tips de salud y novedades de MiDoc.', 'Subtítulo redes', 1),
+('redes', 'redes.visible', 'numero', '1', 'Mostrar sección redes (1=sí, 0=no)', 1),
+('redes', 'redes.facebook', 'url', 'https://www.facebook.com/share/1Yfdz5ojML/', 'Facebook (URL)', 1),
+('redes', 'redes.youtube', 'url', 'https://www.youtube.com/@midochernan', 'YouTube (URL)', 1),
+('redes', 'redes.tiktok', 'url', 'https://www.tiktok.com/@midochernan', 'TikTok (URL)', 1),
+('videos', 'videos.titulo', 'texto', 'Videos y contenido', 'Título sección videos', 1),
+('videos', 'videos.subtitulo', 'texto', 'Mira nuestras publicaciones y material educativo.', 'Subtítulo videos', 1),
+('videos', 'videos.visible', 'numero', '1', 'Mostrar sección videos (1=sí, 0=no)', 1),
 ('theme', 'theme.cyan', 'color', '#003E67', 'Cian / azul principal', 1),
 ('theme', 'theme.yellow', 'color', '#F9D423', 'Amarillo (botones CTA)', 1),
 ('theme', 'theme.orange', 'color', '#FF9100', 'Naranja (acento)', 1),

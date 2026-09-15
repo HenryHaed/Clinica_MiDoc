@@ -1,7 +1,7 @@
 <?php
 /**
  * Appointment request endpoint.
- * Accepts JSON or form POST and stores the request in storage/citas.json.
+ * Accepts JSON or form POST and stores the request in DB (or storage/citas.json fallback).
  */
 
 declare(strict_types=1);
@@ -31,14 +31,23 @@ $telefono = trim((string) ($input['telefono'] ?? $input['phone'] ?? ''));
 $servicio = trim((string) ($input['servicio'] ?? $input['service'] ?? ''));
 $mensaje = trim((string) ($input['mensaje'] ?? $input['message'] ?? ''));
 
-$allowedServices = [
-    'apendicitis',
-    'colecistitis',
-    'hernias',
-    'laparoscopica',
-    'toracica',
-    'otro',
-];
+require_once dirname(__DIR__) . '/config/db.php';
+require_once dirname(__DIR__) . '/includes/cms.php';
+
+$allowedServices = cita_motivos_slugs();
+// Compatibilidad con solicitudes antiguas por slug de servicio
+try {
+    servicios_ensure_catalog();
+    $rows = db()->query(
+        "SELECT slug FROM servicios WHERE deleted_at IS NULL AND activo = 1"
+    )->fetchAll(PDO::FETCH_COLUMN);
+    $allowedServices = array_values(array_unique(array_merge(
+        $allowedServices,
+        array_map('strval', $rows ?: [])
+    )));
+} catch (Throwable $e) {
+    // keep motivos only
+}
 
 $errors = [];
 
@@ -69,8 +78,6 @@ if ($errors !== []) {
     exit;
 }
 
-require_once dirname(__DIR__) . '/config/db.php';
-
 $record = [
     'id' => bin2hex(random_bytes(8)),
     'nombre' => $nombre,
@@ -85,10 +92,29 @@ $saved = false;
 $pdo = db();
 if ($pdo instanceof PDO) {
     try {
-        $svcStmt = $pdo->prepare('SELECT id FROM servicios WHERE slug = ? AND (deleted_at IS NULL) LIMIT 1');
+        $svcStmt = $pdo->prepare(
+            'SELECT id FROM servicios WHERE slug = ? AND deleted_at IS NULL LIMIT 1'
+        );
         $svcStmt->execute([$servicio]);
         $servicioId = $svcStmt->fetchColumn();
+        if ($servicioId === false) {
+            // Motivo tipo dolencia: asociar a "otro" si existe
+            $svcStmt->execute(['otro']);
+            $servicioId = $svcStmt->fetchColumn();
+        }
         $servicioId = $servicioId !== false ? (int) $servicioId : null;
+
+        $motivoLabel = $servicio;
+        foreach (cita_motivos_list() as $m) {
+            if ($m['slug'] === $servicio) {
+                $motivoLabel = $m['titulo'];
+                break;
+            }
+        }
+        $mensajeDb = '[Motivo: ' . $motivoLabel . ']';
+        if ($mensaje !== '') {
+            $mensajeDb .= ' ' . $mensaje;
+        }
 
         $ins = $pdo->prepare(
             'INSERT INTO citas (
@@ -101,7 +127,7 @@ if ($pdo instanceof PDO) {
             $servicioId,
             $nombre,
             $telefono,
-            $mensaje !== '' ? $mensaje : null,
+            $mensajeDb,
             'pendiente',
             'web_publica',
             $record['ip'],
@@ -142,6 +168,6 @@ if (!$saved) {
 http_response_code(201);
 echo json_encode([
     'ok' => true,
-    'message' => '¡Solicitud recibida! Te contactaremos pronto para confirmar tu cita.',
+    'message' => 'Borrador listo. Confirma el envío en WhatsApp.',
     'id' => $record['id'],
 ], JSON_UNESCAPED_UNICODE);

@@ -9,12 +9,11 @@ require_once __DIR__ . '/includes/seo.php';
 header('Content-Type: application/xml; charset=utf-8');
 header('Cache-Control: public, max-age=3600');
 
-$base = rtrim(seo_base_url(), '/');
+$home = seo_home_url();
 $now = gmdate('Y-m-d');
 
 $urls = [
-    ['loc' => $base . '/index.php', 'priority' => '1.0', 'changefreq' => 'weekly'],
-    ['loc' => $base . '/', 'priority' => '1.0', 'changefreq' => 'weekly'],
+    ['loc' => $home, 'priority' => '1.0', 'changefreq' => 'weekly'],
 ];
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";

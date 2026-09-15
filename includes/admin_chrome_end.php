@@ -44,15 +44,17 @@ $colClass = match ($bottomCols) {
   <button type="button" id="admin-more-backdrop" class="absolute inset-0 bg-on-background/40" aria-label="Cerrar menú"></button>
   <div class="absolute bottom-0 left-0 right-0 bg-mist rounded-t-2xl border-t border-sage/50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-12px_40px_rgba(0,62,103,0.18)]">
     <div class="w-10 h-1 rounded-full bg-outline-variant mx-auto mb-4"></div>
-    <h3 id="admin-more-title" class="font-headline-md text-lg font-bold text-on-background mb-3 px-1">Más opciones</h3>
+    <h3 id="admin-more-title" class="font-headline-md text-lg font-bold text-on-background mb-1 px-1">Más opciones</h3>
+    <p class="text-xs text-on-surface-variant px-1 mb-3">Módulos aún no disponibles en el sistema</p>
     <div class="grid grid-cols-1 gap-1">
       <?php foreach ($adminMoreItems as $item): ?>
-        <a href="<?= htmlspecialchars($item['href'], ENT_QUOTES, 'UTF-8') ?>" class="flex items-center gap-3 px-3 py-3 rounded-xl text-on-surface hover:bg-surface-container-high">
-          <span class="material-symbols-outlined text-cyan-deep"><?= htmlspecialchars($item['icon'], ENT_QUOTES, 'UTF-8') ?></span>
-          <span class="font-bold"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
-        </a>
+        <div class="flex items-center gap-3 px-3 py-3 rounded-xl text-on-surface-variant/80 bg-surface-container-lowest/60">
+          <span class="material-symbols-outlined"><?= htmlspecialchars($item['icon'], ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="font-bold flex-1"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-yellow/40 text-on-secondary-fixed">Pronto</span>
+        </div>
       <?php endforeach; ?>
-      <a href="index.php" target="_blank" class="flex items-center gap-3 px-3 py-3 rounded-xl text-on-surface hover:bg-surface-container-high">
+      <a href="index.php" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-3 py-3 rounded-xl text-on-surface hover:bg-surface-container-high">
         <span class="material-symbols-outlined text-cyan-deep">public</span>
         <span class="font-bold">Ver sitio</span>
       </a>

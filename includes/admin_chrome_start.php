@@ -24,51 +24,109 @@ $roleSubtitles = [
 ];
 $roleSubtitle = $roleSubtitle ?? ($roleSubtitles[$rolSlug] ?? 'Panel');
 
-/** @var array<int, array{href:string,icon:string,label:string,cap:string,key:string,short?:string}> */
+/**
+ * Ítems listos (enlaces reales) vs próximos (sin módulo aún).
+ *
+ * @var list<array{href:string,icon:string,label:string,short:string,key:string,ready:bool,cap?:string,caps_any?:list<string>}>
+ */
 $navItems = [
-    ['href' => 'dashboard.php', 'icon' => 'dashboard', 'label' => 'Dashboard', 'short' => 'Inicio', 'cap' => 'dashboard', 'key' => 'dashboard'],
-    ['href' => '#', 'icon' => 'calendar_today', 'label' => 'Citas', 'short' => 'Citas', 'cap' => 'citas', 'key' => 'citas'],
-    ['href' => '#', 'icon' => 'group', 'label' => 'Pacientes', 'short' => 'Pacientes', 'cap' => 'pacientes', 'key' => 'pacientes'],
-    ['href' => '#', 'icon' => 'medical_services', 'label' => 'Clínico', 'short' => 'Clínico', 'cap' => 'clinico', 'key' => 'clinico'],
-    ['href' => 'ajustes.php?tab=contenido', 'icon' => 'web', 'label' => 'CMS Landing', 'short' => 'CMS', 'cap' => 'cms', 'key' => 'cms'],
-    ['href' => '#', 'icon' => 'manage_accounts', 'label' => 'Usuarios', 'short' => 'Usuarios', 'cap' => 'usuarios', 'key' => 'usuarios'],
-    ['href' => 'ajustes.php', 'icon' => 'settings', 'label' => 'Ajustes del sistema', 'short' => 'Ajustes', 'cap' => 'config', 'key' => 'config'],
+    [
+        'href' => 'dashboard.php',
+        'icon' => 'dashboard',
+        'label' => 'Dashboard',
+        'short' => 'Inicio',
+        'cap' => 'dashboard',
+        'key' => 'dashboard',
+        'ready' => true,
+    ],
+    [
+        'href' => 'ajustes.php',
+        'icon' => 'settings',
+        'label' => 'Ajustes del sistema',
+        'short' => 'Ajustes',
+        'caps_any' => ['cms', 'config'],
+        'key' => 'ajustes',
+        'ready' => true,
+    ],
+    [
+        'href' => '#',
+        'icon' => 'calendar_today',
+        'label' => 'Citas',
+        'short' => 'Citas',
+        'cap' => 'citas',
+        'key' => 'citas',
+        'ready' => false,
+    ],
+    [
+        'href' => '#',
+        'icon' => 'group',
+        'label' => 'Pacientes',
+        'short' => 'Pacientes',
+        'cap' => 'pacientes',
+        'key' => 'pacientes',
+        'ready' => false,
+    ],
+    [
+        'href' => '#',
+        'icon' => 'medical_services',
+        'label' => 'Clínico',
+        'short' => 'Clínico',
+        'cap' => 'clinico',
+        'key' => 'clinico',
+        'ready' => false,
+    ],
+    [
+        'href' => 'usuarios.php',
+        'icon' => 'manage_accounts',
+        'label' => 'Usuarios',
+        'short' => 'Usuarios',
+        'cap' => 'usuarios',
+        'key' => 'usuarios',
+        'ready' => true,
+    ],
 ];
 
-$allowedNav = [];
+$allowedReady = [];
+$allowedSoon = [];
 foreach ($navItems as $item) {
-    if (auth_can($item['cap'])) {
-        $allowedNav[] = $item;
+    $can = false;
+    if (!empty($item['caps_any']) && is_array($item['caps_any'])) {
+        foreach ($item['caps_any'] as $cap) {
+            if (auth_can((string) $cap)) {
+                $can = true;
+                break;
+            }
+        }
+    } elseif (!empty($item['cap'])) {
+        $can = auth_can((string) $item['cap']);
+    }
+    if (!$can) {
+        continue;
+    }
+    if (!empty($item['ready'])) {
+        $allowedReady[] = $item;
+    } else {
+        $allowedSoon[] = $item;
     }
 }
 
-$preferOrder = ['dashboard', 'citas', 'pacientes', 'clinico', 'config', 'cms', 'usuarios'];
-usort($allowedNav, static function ($a, $b) use ($preferOrder) {
-    $ia = array_search($a['key'], $preferOrder, true);
-    $ib = array_search($b['key'], $preferOrder, true);
-    $ia = $ia === false ? 99 : $ia;
-    $ib = $ib === false ? 99 : $ib;
-    return $ia <=> $ib;
-});
+// Desktop: solo módulos funcionales
+$allowedNav = $allowedReady;
 
-if (count($allowedNav) <= 5) {
-    $adminBottomItems = $allowedNav;
-    $adminMoreItems = [];
-} else {
-    $adminBottomItems = array_slice($allowedNav, 0, 4);
-    $adminMoreItems = array_slice($allowedNav, 4);
-}
+// Móvil: Ajustes siempre visible en la barra; el resto sin función va a «Más»
+$adminBottomItems = $allowedReady;
+$adminMoreItems = $allowedSoon;
 
 $pageTitleAdmin = $pageTitleAdmin ?? 'MiDoc Admin';
 
 if (!function_exists('admin_item_active')) {
     function admin_item_active(string $navActive, array $item): bool
     {
-        return $navActive === $item['key']
-            || ($navActive === 'ajustes' && (
-                ($item['key'] === 'cms' && (string) ($_GET['tab'] ?? '') === 'contenido')
-                || ($item['key'] === 'config' && (string) ($_GET['tab'] ?? '') !== 'contenido')
-            ));
+        if ($navActive === $item['key']) {
+            return true;
+        }
+        // Página de ajustes marca el ítem Ajustes
+        return $navActive === 'ajustes' && ($item['key'] === 'ajustes' || $item['key'] === 'config');
     }
 }
 ?>
@@ -150,6 +208,16 @@ if (!function_exists('admin_item_active')) {
     <span class="text-sm leading-snug"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
   </a>
 <?php endforeach; ?>
+<?php if ($allowedSoon !== []): ?>
+  <p class="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80">Próximamente</p>
+  <?php foreach ($allowedSoon as $item): ?>
+    <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant/70 border border-transparent opacity-80" title="Módulo aún no disponible">
+      <span class="material-symbols-outlined shrink-0"><?= htmlspecialchars($item['icon'], ENT_QUOTES, 'UTF-8') ?></span>
+      <span class="text-sm leading-snug flex-1"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
+      <span class="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-surface-container">Pronto</span>
+    </div>
+  <?php endforeach; ?>
+<?php endif; ?>
 </div>
 <div class="p-3 border-t border-sage/50 space-y-1">
 <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-highest transition-colors" href="index.php" target="_blank" rel="noopener noreferrer">

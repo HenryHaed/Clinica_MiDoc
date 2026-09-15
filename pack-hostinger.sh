@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Genera midoc-hostinger.zip listo para extraer en public_html de Hostinger
-# (sobrescribe archivos existentes; no borra uploads que ya estén en el servidor).
+# Paquete COMPLETO (sin node_modules / sin .git / sin src de Tailwind).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -22,8 +22,18 @@ copy_tree() {
   cp -a "$src/." "$dest/"
 }
 
-# PHP de la raíz
-cp -a "$ROOT/index.php" "$ROOT/login.php" "$ROOT/dashboard.php" "$ROOT/ajustes.php" "$ROOT/recuperar.php" "$ROOT/sitemap.php" "$ROOT/robots.php" "$ROOT/robots.txt" "$STAGE/"
+# PHP de la raíz (sitio + panel)
+cp -a \
+  "$ROOT/index.php" \
+  "$ROOT/login.php" \
+  "$ROOT/dashboard.php" \
+  "$ROOT/ajustes.php" \
+  "$ROOT/usuarios.php" \
+  "$ROOT/recuperar.php" \
+  "$ROOT/sitemap.php" \
+  "$ROOT/robots.php" \
+  "$ROOT/robots.txt" \
+  "$STAGE/"
 cp -a "$ROOT/.htaccess" "$ROOT/.user.ini" "$STAGE/"
 cp -a "$ROOT/HOSTINGER.md" "$STAGE/" 2>/dev/null || true
 
@@ -34,53 +44,75 @@ copy_tree "$ROOT/storage" "$STAGE/storage"
 copy_tree "$ROOT/config" "$STAGE/config"
 copy_tree "$ROOT/assets" "$STAGE/assets"
 
-# No llevar basura de desarrollo
-rm -f "$STAGE/config/db.local.php"
+# No llevar basura / desarrollo
+rm -f "$STAGE/config/db.local.php" 2>/dev/null || true
 rm -f "$STAGE/storage/"*.json 2>/dev/null || true
-# Uploads vacíos en el ZIP (al extraer no borra imágenes ya subidas en Hostinger)
-find "$STAGE/assets/uploads" -type f ! -name '.gitkeep' ! -name '.htaccess' -delete 2>/dev/null || true
+# Quitar ejemplos de credenciales del ZIP (ya van db.hostinger.php y smtp.php)
+# (se mantienen .example por si hace falta recrear; no afectan)
 
-# Instrucciones de actualización en masa
-cat > "$STAGE/ACTUALIZAR-HOSTINGER.txt" << 'EOF'
-ACTUALIZAR MiDoc EN HOSTINGER (sobrescritura en masa)
-=====================================================
+# Instrucciones
+cat > "$STAGE/LEEME-INSTALAR.txt" << 'EOF'
+MiDoc — PAQUETE COMPLETO PARA HOSTINGER
+=======================================
 
-1) File Manager → entra a public_html
-2) Sube este ZIP (midoc-hostinger.zip)
-3) Clic derecho → Extract / Extraer
-4) Cuando pregunte sobrescribir: SÍ / Overwrite / Replace
-5) Borra el ZIP del servidor cuando termine
+Este ZIP es el sitio completo (sin node_modules, sin .git, sin src).
 
-Qué incluye este paquete
-------------------------
-- index.php, login.php, recuperar.php, dashboard.php, ajustes.php
+ANTES DE BORRAR EN EL SERVIDOR
+------------------------------
+1) Si tienes imágenes ya subidas en el hosting, descarga de respaldo:
+   public_html/assets/uploads/
+2) Anota tu config/db.hostinger.php y config/smtp.php por si acaso
+   (este ZIP ya trae los de tu PC local de producción).
+
+INSTALACIÓN LIMPIA (reemplazo total)
+------------------------------------
+1) File Manager → public_html
+2) Borra el contenido anterior de public_html (o muévelo a una carpeta _old)
+3) Sube midoc-hostinger.zip
+4) Clic derecho → Extract / Extraer
+5) Confirma que index.php quedó DENTRO de public_html
+   (no en public_html/Clinica-Mi-Doc/)
+6) Borra el ZIP del servidor
+
+BASE DE DATOS
+-------------
+- Si la BD YA existe y funciona: NO reimportes sql/schema.sql.
+  Solo aplica en phpMyAdmin los patch_*.sql que aún no hayas corrido
+  (si sale "Duplicate column", ignóralo):
+    sql/patch_whatsapp.sql
+    sql/patch_redes_videos.sql
+    sql/patch_servicios_adultos_pediatria.sql
+    sql/patch_servicios_modal.sql
+    sql/patch_usuarios_perfil.sql
+    sql/patch_seo.sql
+    sql/patch_password_resets.sql
+    sql/patch_ubicacion_maps.sql
+    sql/patch_theme_colors.sql
+
+- Si la BD es NUEVA / vacía: Importar UNA VEZ sql/schema.sql
+  (ya incluye estructura actualizada). Luego no hace falta reimportarlo.
+
+QUÉ INCLUYE
+-----------
+- index.php, login.php, recuperar.php, dashboard.php, ajustes.php, usuarios.php
 - sitemap.php, robots.php, robots.txt, .htaccess, .user.ini
 - api/, includes/, assets/, config/, sql/, storage/
-- config/db.hostinger.php y config/smtp.php (credenciales de producción)
+- config/db.hostinger.php y config/smtp.php
 
-Qué NO debes reimportar
------------------------
-- NO ejecutes otra vez todo sql/schema.sql (rompe/duplica datos).
+QUÉ NO INCLUYE (a propósito)
+----------------------------
+- node_modules/, package.json, src/, .git/, dist antiguos
+- Documentación de desarrollo (plan.md, etc.)
 
-Solo si tu BD es anterior a estos cambios, en phpMyAdmin (Importar)
-ejecuta UNA VEZ cada patch que falte:
-  sql/patch_password_resets.sql
-  sql/patch_seo.sql
-  sql/patch_ubicacion_maps.sql
-  sql/patch_theme_colors.sql
+COMPROBAR
+---------
+- https://tudominio.com/
+- https://tudominio.com/api/status.php
+- https://tudominio.com/login.php
+- Ctrl+F5 para CSS/JS nuevos
 
-Tras extraer
-------------
-- Comprueba: https://tudominio.com/
-- API: https://tudominio.com/api/status.php
-- Login: https://tudominio.com/login.php
-- Ctrl+F5 en el navegador para ver CSS/JS nuevos
-
-Notas
------
-- Las imágenes ya cargadas en assets/uploads suelen conservarse
-  (este ZIP no trae esas fotos; solo la estructura vacía).
-- Si al extraer aparece una carpeta extra, mueve el contenido a public_html.
+Permisos sugeridos: carpetas 755, archivos 644.
+assets/uploads y storage deben poder escribirse.
 EOF
 
 rm -f "$ZIP"
@@ -127,10 +159,10 @@ echo ""
 echo "Listo: $ZIP"
 ls -lh "$ZIP"
 echo ""
-echo "Contenido principal:"
+echo "Archivos en el paquete (máx. profundidad 2):"
 (
   cd "$STAGE"
-  find . -maxdepth 2 -type f | sort | head -n 60
+  find . -maxdepth 2 \( -type f -o -type d \) | sort | head -n 80
 )
 echo ""
-echo "En Hostinger: public_html → Upload ZIP → Extract (Overwrite) → borrar ZIP."
+echo "En Hostinger: vacía public_html → Upload ZIP → Extract → borrar ZIP."

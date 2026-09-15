@@ -4,10 +4,15 @@
  */
 $year = date('Y');
 $phone = $phone ?? '70688374';
+$whatsappGeneralUrl = $whatsappGeneralUrl ?? ('https://wa.me/591' . preg_replace('/\D+/', '', (string) $phone));
 $basePath = $basePath ?? '';
 $mapsUrl = $mapsUrl ?? 'https://maps.app.goo.gl/SeunT1EjTJ2AG4Nn9';
+$email = $email ?? (function_exists('cms_get') ? cms_get('config.email', 'midochernandigital@gmail.com') : 'midochernandigital@gmail.com');
 $ubicacionDireccionFooter = $ubicacionDireccion ?? "Clínica Saint Jude, Piso 1, Plaza El Radialista N° 102, Zona San Clemente";
 $ubicacionHorariosFooter = $ubicacionHorarios ?? "Lun - Vie: 8am - 6pm\nSábados: Previa Cita";
+$redesFacebook = $redesFacebook ?? 'https://www.facebook.com/share/1Yfdz5ojML/';
+$redesYoutube = $redesYoutube ?? 'https://www.youtube.com/@midochernan';
+$redesTiktok = $redesTiktok ?? 'https://www.tiktok.com/@midochernan';
 ?>
 <footer class="bg-mist border-t border-sage/50 w-full max-w-full overflow-x-hidden pt-12 md:pt-24 pb-8 md:pb-12">
 <div class="landing-shell container mx-auto max-w-7xl px-4 sm:px-6 md:px-12 min-w-0">
@@ -19,11 +24,23 @@ $ubicacionHorariosFooter = $ubicacionHorarios ?? "Lun - Vie: 8am - 6pm\nSábados
 <p class="font-body-md text-sm sm:text-lg text-on-surface-variant mb-6 leading-relaxed landing-break">
                         Atención médica de excelencia por el Dr. Hernán Caihuara Salas, brindando cuidado experto y compasivo para toda la familia.
                     </p>
-<div class="flex gap-3">
-<a class="w-11 h-11 rounded-full border border-light-cyan/60 flex items-center justify-center text-cyan-deep hover:border-light-cyan hover:bg-light-cyan/25 transition-all" href="#" aria-label="Compartir">
-<span class="material-symbols-outlined">share</span>
+<div class="flex flex-wrap gap-3">
+<?php if (trim((string) $redesFacebook) !== ''): ?>
+<a class="w-11 h-11 rounded-full border border-cyan-deep/40 text-cyan-deep bg-transparent hover:bg-cyan-deep hover:text-white transition-all inline-flex items-center justify-center" href="<?= htmlspecialchars($redesFacebook, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+<?= function_exists('social_icon_svg') ? social_icon_svg('facebook', 'w-5 h-5') : '<span class="material-symbols-outlined">share</span>' ?>
 </a>
-<a class="w-11 h-11 rounded-full border border-light-cyan/60 flex items-center justify-center text-cyan-deep hover:border-light-cyan hover:bg-light-cyan/25 transition-all" href="mailto:info@clinicamidoc.com" aria-label="Correo">
+<?php endif; ?>
+<?php if (trim((string) $redesYoutube) !== ''): ?>
+<a class="w-11 h-11 rounded-full border border-cyan-deep/40 text-cyan-deep bg-transparent hover:bg-cyan-deep hover:text-white transition-all inline-flex items-center justify-center" href="<?= htmlspecialchars($redesYoutube, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+<?= function_exists('social_icon_svg') ? social_icon_svg('youtube', 'w-5 h-5') : '<span class="material-symbols-outlined">play_circle</span>' ?>
+</a>
+<?php endif; ?>
+<?php if (trim((string) $redesTiktok) !== ''): ?>
+<a class="w-11 h-11 rounded-full border border-cyan-deep/40 text-cyan-deep bg-transparent hover:bg-cyan-deep hover:text-white transition-all inline-flex items-center justify-center" href="<?= htmlspecialchars($redesTiktok, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+<?= function_exists('social_icon_svg') ? social_icon_svg('tiktok', 'w-5 h-5') : '<span class="material-symbols-outlined">music_note</span>' ?>
+</a>
+<?php endif; ?>
+<a class="w-11 h-11 rounded-full border border-cyan-deep/40 text-cyan-deep bg-transparent hover:bg-cyan-deep hover:text-white transition-all inline-flex items-center justify-center" href="mailto:<?= htmlspecialchars((string) $email, ENT_QUOTES, 'UTF-8') ?>" aria-label="Correo">
 <span class="material-symbols-outlined">mail</span>
 </a>
 </div>
@@ -34,16 +51,20 @@ $ubicacionHorariosFooter = $ubicacionHorarios ?? "Lun - Vie: 8am - 6pm\nSábados
 <li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#servicios">Nuestros Servicios</a></li>
 <li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#especialistas">Sobre el Doctor</a></li>
 <li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#contacto">Agendar Cita</a></li>
+<?php if (!empty($videosVisible) && !empty($landingVideosPublic)): ?>
+<li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#videos">Videos</a></li>
+<?php endif; ?>
+<?php if (!empty($redesVisible)): ?>
+<li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#redes">Redes sociales</a></li>
+<?php endif; ?>
 <li><button type="button" data-ubicacion-modal class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors text-left">Ubicación</button></li>
 </ul>
 </div>
 <div class="min-w-0">
 <h4 class="font-label-md text-xs sm:text-sm text-on-surface font-bold mb-5 uppercase tracking-wider sm:tracking-widest">Especialidades</h4>
 <ul class="space-y-3">
-<li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#servicios">Cirugía General</a></li>
-<li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#especialistas">Cirugía Pediátrica</a></li>
-<li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#servicios">Cirugía Laparoscópica</a></li>
-<li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#servicios">Cirugía Torácica</a></li>
+<li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#servicios-adultos">Cirugía General Adultos</a></li>
+<li><a class="font-body-md text-sm sm:text-lg text-on-surface-variant hover:text-cyan-deep transition-colors" href="#servicios-pediatrica">Cirugía Pediátrica</a></li>
 </ul>
 </div>
 <div class="min-w-0">
@@ -55,7 +76,7 @@ $ubicacionHorariosFooter = $ubicacionHorarios ?? "Lun - Vie: 8am - 6pm\nSábados
 </li>
 <li class="flex items-center gap-3">
 <span class="material-symbols-outlined text-cyan-deep text-xl shrink-0">call</span>
-<a class="font-body-md text-sm sm:text-lg text-on-surface-variant font-bold" href="tel:<?= htmlspecialchars($phone, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($phone, ENT_QUOTES, 'UTF-8') ?></a>
+<a class="font-body-md text-sm sm:text-lg text-on-surface-variant font-bold hover:text-cyan-deep transition-colors" href="<?= htmlspecialchars($whatsappGeneralUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($phone, ENT_QUOTES, 'UTF-8') ?> (WhatsApp)</a>
 </li>
 <li class="flex items-start gap-3">
 <span class="material-symbols-outlined text-primary text-xl shrink-0">schedule</span>
@@ -82,6 +103,6 @@ Cómo llegar
 </div>
 </div>
 </footer>
-<script src="<?= htmlspecialchars(rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/') . '/assets/js/main.js', ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<script src="<?= htmlspecialchars(rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/') . '/assets/js/main.js?v=' . (string) @filemtime(__DIR__ . '/../assets/js/main.js'), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </body>
 </html>
